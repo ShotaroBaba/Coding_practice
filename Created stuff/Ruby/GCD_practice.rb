@@ -49,5 +49,5 @@ def GCD(a, b)
     elsif b == 0
         return a
     end
-    return a, b
+    
 end
