@@ -1,5 +1,3 @@
-# This method does not display the process of GCD calculation
-
 # Calculate Great Common Divisor (GCD) using 
 # Euclidean algorithm.
 
