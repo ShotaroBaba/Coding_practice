@@ -21,6 +21,12 @@ def GCD(a, b)
     
 end
 
+# Calculate Least Commom Multiplier (LCM)
+# using GCD
+def LCM(a, b)
+    return (a * b)/ GCD(a, b)
+end
+
 # Check if a given number is a prime.
 def is_prime(num) # [1]
     div = 5
@@ -58,7 +64,7 @@ end
 # Factorize the integer values
 # and show the prime numbers as a list.
 def pollards_rho_factorization(num) # [2]
-    #print "beginning: #{num}\n"
+
     if num == 1
         return [1]
     end
@@ -91,6 +97,46 @@ def pollards_rho_factorization(num) # [2]
     end
 end
 
+# Euler totient function for integer calculation.
+# [3]
+def euler_function(num)
+    if num == 1
+        return num
+    end
+    factorized_num = pollards_rho_factorization(num)
+    result = factorized_num.inject(:*)
+    factorized_num = factorized_num.uniq
+    for num in factorized_num
+        result *= (1 - 1.0/num)
+    end
+    return result.round
+end
+
+# Calculate Carmichael totient value.
+# [4]
+def carmichael_function(num)
+    if num == 1
+        return num
+    end
+
+    factorized_num = pollards_rho_factorization(num)
+    result = factorized_num.inject(:*)
+    factorized_num = factorized_num.uniq
+
+    if num > 7 && factorized_num == [2]
+        for num in factorized_num
+            result *= (1 - 1.0/num)
+        end
+        return (result / 2).round
+
+    else
+        for num in factorized_num
+            result *= (1 - 1.0/num)
+        end
+        return result.round
+    end
+
+end
 
 # Remove comment symbols if you want to conduct the tests
 # i = 1
@@ -104,7 +150,7 @@ end
 #   i += 1
 # end
 
-# Reference:
+# References:
 #
 # [1] Alexandru & Dickinson, M. (2009, November/2018, March). What is the best algorithm for checking if a number is prime?. 
 #       Retrieved from https://stackoverflow.com/a/1801446/9378952
@@ -112,3 +158,10 @@ end
 # [2] Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein C. (2009). 
 #       Integer factorization In Thomas H. C, Charles E. L., Ronald L. R., & Clifford S. (Eds.), 
 #       Number-theoretic algorithms (pp. 926–984) (3rd edition). Cambridge, MA ,USA: MIT Press. 
+#
+# [3] Weisstein, Eric W. (2019) Carmichael Function. 
+#       Retrieved from http://mathworld.wolfram.com/CarmichaelFunction.html
+#
+# [4] Weisstein, Eric W. Totient Function. 
+#       Retrieved from http://mathworld.wolfram.com/TotientFunction.html
+#
