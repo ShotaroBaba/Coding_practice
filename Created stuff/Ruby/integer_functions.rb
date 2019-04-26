@@ -135,7 +135,20 @@ def carmichael_function(num)
         end
         return result.round
     end
+end
 
+# Calculate Dedekind psi function
+def dedekind_function(num)
+    if num == 1
+        return num
+    end
+    factorized_num = pollards_rho_factorization(num)
+    result = factorized_num.inject(:*)
+    factorized_num = factorized_num.uniq
+    for num in factorized_num
+        result *= (1 + 1.0/num)
+    end
+    return result.round
 end
 
 # Remove comment symbols if you want to conduct the tests
