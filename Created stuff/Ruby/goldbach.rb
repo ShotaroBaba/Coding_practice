@@ -30,6 +30,7 @@ end
 # Check the list of Goldbach.
 def find_goldbach(num)
     i = 4
+    increment = 2
     if num < i
         puts "Please input number more than 4."
         return 
@@ -40,19 +41,25 @@ def find_goldbach(num)
     dict_class = {}
     plus_list = []
     while i <= num
-        if num == 4
+        if i == 4
             dict_class[num] = [[2, 2]]
         else
             plus_list = []
-            tmp = i - 2
+            tmp = i - 1
             a_num = 3
             b_num = i - 3
+            if(is_prime(a_num) and is_prime(b_num))
+                plus_list += [[a_num, b_num]]
+            end
+            a_num = 5
+            b_num = i - 5
             while a_num < tmp
                 if(is_prime(a_num) and is_prime(b_num))
                     plus_list += [[a_num, b_num]]
                 end
-                a_num += 2
-                b_num -= 2
+                a_num += increment
+                b_num -= increment
+                increment = 6 - increment
             end
             dict_class[i] = plus_list
         end
