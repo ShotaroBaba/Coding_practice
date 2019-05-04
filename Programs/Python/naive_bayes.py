@@ -1,12 +1,9 @@
 # My naive-bayes classifier implementation using
-# Pandas 
+# Pandas
 
 import pandas as pd
 
-data = pd.read_csv('../../../data/iris.data') 
-
 # Remove the null counts if there are erroneous parts of data. 
-data["type"].value_counts()
 
 # Calculate the number of class.
 def calculate_class_num(data, class_col):
@@ -16,9 +13,17 @@ def calculate_class_num(data, class_col):
 
 
 # In this case, we are using "type"
-result_tmp = calculate_class_num(data, "type")
+#result_tmp = calculate_class_num(data, "type")
 
 
 
-def train_naive_bayes():
-    pass    
+def train_naive_bayes(data):
+    return  
+
+def main():
+    data = pd.read_csv('../../../data/iris.data') 
+    train_naive_bayes(data)
+    return  
+
+if __name__ == "__main__":
+    main()
