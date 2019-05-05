@@ -18,6 +18,7 @@ def calculate_class_num(data, class_col):
 
 
 def train_naive_bayes(data):
+    
     return  
 
 def main():

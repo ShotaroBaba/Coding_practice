@@ -36,6 +36,10 @@ def collatz_graph(max_num, file_name = "collatz_tree", image_format = "png", vie
                 existing_num.append(num)
     dot.render(file_name, format = image_format, view = view)
 
+
+# Calculate the shortest graphs to reach 1 
+# using dijestra
+
 # For testing this program
 if (__name__ == "__main__"):
     collatz_graph(250)
