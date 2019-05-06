@@ -1,5 +1,7 @@
 *.gv
 *.pdf
-*.png
+
+collatz_tree.png
 collatz_tree
+finder.png
 .vscode
