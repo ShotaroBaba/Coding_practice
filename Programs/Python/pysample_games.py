@@ -67,6 +67,24 @@ class Player(pygame.sprite.Sprite):
             newpos = self.rect.move((1, 0))
             self.rect = newpos
 
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image, self.rect = load_image('enemy.png', -1)
+        screen = pygame.display.get_surface()
+        self.area = screen.get_rect()
+
+        newpos = self.rect.move((self.area.right - self.rect.right,0))
+        self.rect = newpos
+
+    def update(self):
+        newpos = self.rect.move((-1, 0))
+        self.rect = newpos
+        if self.rect.left < self.area.left:
+            newpos = self.rect.move((self.area.right - self.rect.right,0))
+            self.rect = newpos
+
+
 def main():
 
     black = (0, 0, 0)
@@ -86,14 +104,18 @@ def main():
     # Initialise everything here...
     clock = pygame.time.Clock()
     player = Player()
+    enemy = Enemy()
     screen.blit(player.image, player.rect)
-    allsprites = pygame.sprite.RenderPlain((player))
+    allsprites = pygame.sprite.RenderPlain((player, enemy))
     pygame.display.flip()
     
     going = True
     while going:
         clock.tick(60)
-
+        up = True
+        down = True
+        left = True
+        right = True
         # Handling the input events
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -102,14 +124,39 @@ def main():
                 if event.key == K_ESCAPE:
                     going = False
                 elif event.key == K_DOWN:
-                    player.move_down()
+                    up = True
+                    down = False
+                   # player.move_down()
                 elif event.key == K_UP:
-                    player.move_up()
+                    down = True
+                    up = False
+                   # player.move_up()
                 elif event.key == K_LEFT:
-                    player.move_left()
+                    left = True
+                    right = False
+                   # player.move_left()
                 elif event.key == K_RIGHT:
-                    player.move_right()
-        
+                    right = True
+                    left = False
+                   # player.move_right()
+            elif event.type ==  KEYUP:
+                up = False
+                down = False
+                left = False
+                right = False
+            
+        if up:
+            player.move_up()
+        if down:
+            player.move_down()
+        if left:
+            player.move_left()
+        if right:
+            player.move_right()
+
+        # Handling enemy events.
+        enemy.update()
+
         allsprites.update()
         screen.blit(background, (0, 0))
         allsprites.draw(screen)
