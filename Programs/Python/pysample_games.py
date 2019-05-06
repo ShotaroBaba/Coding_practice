@@ -112,49 +112,33 @@ def main():
     going = True
     while going:
         clock.tick(60)
-        up = True
-        down = True
-        left = True
-        right = True
+        # up = True
+        # down = True
+        # left = True
+        # right = True
+        key_state = pygame.key.get_pressed()
+        
+        if key_state[K_ESCAPE]:
+            going = False
+        if key_state[K_UP]:
+            player.move_up()
+            # player.move_down()
+        if key_state[K_DOWN]:
+            player.move_down()
+            # player.move_up()
+        if key_state[K_LEFT]:
+            player.move_left()
+            # player.move_left()
+        if key_state[K_RIGHT]:
+            player.move_right()  
+            # player.move_right()
+
         # Handling the input events
         for event in pygame.event.get():
             if event.type == QUIT:
                 going = False
-            elif event.type ==  KEYDOWN:
-                if event.key == K_ESCAPE:
-                    going = False
-                elif event.key == K_DOWN:
-                    up = True
-                    down = False
-                   # player.move_down()
-                elif event.key == K_UP:
-                    down = True
-                    up = False
-                   # player.move_up()
-                elif event.key == K_LEFT:
-                    left = True
-                    right = False
-                   # player.move_left()
-                elif event.key == K_RIGHT:
-                    right = True
-                    left = False
-                   # player.move_right()
-            elif event.type ==  KEYUP:
-                up = False
-                down = False
-                left = False
-                right = False
-            
-        if up:
-            player.move_up()
-        if down:
-            player.move_down()
-        if left:
-            player.move_left()
-        if right:
-            player.move_right()
 
-        # Handling enemy events.
+
         enemy.update()
 
         allsprites.update()
