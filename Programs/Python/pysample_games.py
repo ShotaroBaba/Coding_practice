@@ -40,6 +40,32 @@ def load_sound(name):
     return sound
 
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, player_rect):
+        pygame.sprite.Sprite.__init__(self)
+        self.image, self.rect = load_image('bullet.png', -1)
+        screen = pygame.display.get_surface()
+        self.area = screen.get_rect()
+        
+        new_pos = self.rect.move((player_rect.right, player_rect.top - 10))
+        self.rect = new_pos
+
+    def update(self):
+        newpos = self.rect.move((1, 0))
+        self.rect = newpos
+        # if self.rect.left > self.area.left:
+        #     newpos = self.rect.move((self.area.right - self.rect.right,0))
+        #     self.rect = newpos
+
+
+
+# class EnemyBullet(pygame.sprite.Sprite):
+#     def __init__(self):
+#         pygame.sprite.Sprite.__init__(self)
+#         self.image, self.rect = load_image('player.png', -1)
+#         screen = pygame.display.get_surface()
+#         self.area = screen.get_rect()
+
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -112,12 +138,9 @@ def main():
     going = True
     while going:
         clock.tick(60)
-        # up = True
-        # down = True
-        # left = True
-        # right = True
+
         key_state = pygame.key.get_pressed()
-        
+
         if key_state[K_ESCAPE]:
             going = False
         if key_state[K_UP]:
@@ -132,6 +155,9 @@ def main():
         if key_state[K_RIGHT]:
             player.move_right()  
             # player.move_right()
+        if key_state[K_SPACE]:
+            temp_rect = player.rect
+            allsprites.add(Bullet(temp_rect))
 
         # Handling the input events
         for event in pygame.event.get():
