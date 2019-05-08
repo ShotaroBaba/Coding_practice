@@ -9,6 +9,7 @@ if not pygame.mixer: print('Warning, sound disabled')
 # Load data for generating image on the screen.
 data_dir = "../data/test_game_data"
 
+bullet_pos_pad = -20
 
 # Method to load image [1]
 def load_image(name, colorkey=None):
@@ -41,22 +42,26 @@ def load_sound(name):
 
 
 class Bullet(pygame.sprite.Sprite):
+    # Later the move value might be added for
+    # achieving flexibility.
     def __init__(self, player_rect):
         pygame.sprite.Sprite.__init__(self)
         self.image, self.rect = load_image('bullet.png', -1)
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         
-        new_pos = self.rect.move((player_rect.right, player_rect.top - 10))
+        new_pos = self.rect.move((player_rect.right, player_rect.top - bullet_pos_pad))
         self.rect = new_pos
 
+    # Move left every time
     def update(self):
         newpos = self.rect.move((1, 0))
         self.rect = newpos
-        # if self.rect.left > self.area.left:
-        #     newpos = self.rect.move((self.area.right - self.rect.right,0))
-        #     self.rect = newpos
-
+        if self.rect.right > self.area.right or \
+        self.rect.left < self.area.left or \
+        self.rect.bottom > self.area.bottom or \
+        self.rect.top < self.area.top:
+            self.kill()
 
 
 # class EnemyBullet(pygame.sprite.Sprite):
@@ -109,7 +114,9 @@ class Enemy(pygame.sprite.Sprite):
         if self.rect.left < self.area.left:
             newpos = self.rect.move((self.area.right - self.rect.right,0))
             self.rect = newpos
-
+    
+    def is_collided_with(self, sprite):
+        return self.rect.colliderect(sprite.rect)
 
 def main():
 
@@ -132,7 +139,9 @@ def main():
     player = Player()
     enemy = Enemy()
     screen.blit(player.image, player.rect)
-    allsprites = pygame.sprite.RenderPlain((player, enemy))
+    player_sprites = pygame.sprite.RenderPlain((player))
+    enemy_sprites = pygame.sprite.RenderPlain((enemy))
+    bullet_sprites = pygame.sprite.RenderPlain(())
     pygame.display.flip()
     
     going = True
@@ -157,19 +166,25 @@ def main():
             # player.move_right()
         if key_state[K_SPACE]:
             temp_rect = player.rect
-            allsprites.add(Bullet(temp_rect))
+            bullet_sprites.add(Bullet(temp_rect))
 
         # Handling the input events
         for event in pygame.event.get():
             if event.type == QUIT:
                 going = False
 
-
+        # Move the enemy.
         enemy.update()
 
-        allsprites.update()
+        player_sprites.update()
+        enemy_sprites.update()
+        bullet_sprites.update()
         screen.blit(background, (0, 0))
-        allsprites.draw(screen)
+
+        player_sprites.draw(screen)
+        enemy_sprites.draw(screen)
+        bullet_sprites.draw(screen)
+
         pygame.display.flip()
     
     pygame.quit()
