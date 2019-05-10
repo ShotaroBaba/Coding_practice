@@ -9,7 +9,7 @@ if not pygame.mixer: print('Warning, sound disabled')
 # Load data for generating image on the screen.
 data_dir = "../data/test_game_data"
 
-bullet_pos_pad = -20
+bullet_pos_pad_height = -20
 
 # Method to load image [1]
 def load_image(name, colorkey=None):
@@ -50,11 +50,11 @@ class Bullet(pygame.sprite.Sprite):
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         
-        new_pos = self.rect.move((player_rect.right, player_rect.top - bullet_pos_pad))
+        new_pos = self.rect.move((player_rect.right, player_rect.top - bullet_pos_pad_height))
         self.rect = new_pos
 
     # Move left every time
-    def update(self):
+    def update_to_left(self):
         newpos = self.rect.move((1, 0))
         self.rect = newpos
         if self.rect.right > self.area.right or \
@@ -63,13 +63,15 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.top < self.area.top:
             self.kill()
 
+    def update_to_right(self):
+        newpos = self.rect.move((-1, 0))
+        self.rect = newpos
+        if self.rect.right > self.area.right or \
+        self.rect.left < self.area.left or \
+        self.rect.bottom > self.area.bottom or \
+        self.rect.top < self.area.top:
+            self.kill()
 
-# class EnemyBullet(pygame.sprite.Sprite):
-#     def __init__(self):
-#         pygame.sprite.Sprite.__init__(self)
-#         self.image, self.rect = load_image('player.png', -1)
-#         screen = pygame.display.get_surface()
-#         self.area = screen.get_rect()
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
