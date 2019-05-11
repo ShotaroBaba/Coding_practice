@@ -40,37 +40,38 @@ def load_sound(name):
         raise SystemExit(str(geterror()))
     return sound
 
-
+# Bullet class
 class Bullet(pygame.sprite.Sprite):
     # Later the move value might be added for
     # achieving flexibility.
-    def __init__(self, player_rect):
+    def __init__(self, player_rect, pos_pad = 0):
         pygame.sprite.Sprite.__init__(self)
         self.image, self.rect = load_image('bullet.png', -1)
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         
-        new_pos = self.rect.move((player_rect.right, player_rect.top - bullet_pos_pad_height))
+        new_pos = self.rect.move((player_rect.right + pos_pad, player_rect.top - bullet_pos_pad_height))
         self.rect = new_pos
 
     # Move left every time
-    def update_to_left(self):
-        newpos = self.rect.move((1, 0))
-        self.rect = newpos
-        if self.rect.right > self.area.right or \
-        self.rect.left < self.area.left or \
-        self.rect.bottom > self.area.bottom or \
-        self.rect.top < self.area.top:
-            self.kill()
+    def update(self, left_or_right):
 
-    def update_to_right(self):
-        newpos = self.rect.move((-1, 0))
-        self.rect = newpos
-        if self.rect.right > self.area.right or \
-        self.rect.left < self.area.left or \
-        self.rect.bottom > self.area.bottom or \
-        self.rect.top < self.area.top:
-            self.kill()
+        if left_or_right == "right":
+            newpos = self.rect.move((1, 0))
+            self.rect = newpos
+            if self.rect.right > self.area.right or \
+            self.rect.left < self.area.left or \
+            self.rect.bottom > self.area.bottom or \
+            self.rect.top < self.area.top:
+                self.kill()
+        elif left_or_right == "left":
+            newpos = self.rect.move((-3, 0))
+            self.rect = newpos
+            if self.rect.right > self.area.right or \
+            self.rect.left < self.area.left or \
+            self.rect.bottom > self.area.bottom or \
+            self.rect.top < self.area.top:
+                self.kill()
 
 
 class Player(pygame.sprite.Sprite):
@@ -143,12 +144,19 @@ def main():
     screen.blit(player.image, player.rect)
     player_sprites = pygame.sprite.RenderPlain((player))
     enemy_sprites = pygame.sprite.RenderPlain((enemy))
-    bullet_sprites = pygame.sprite.RenderPlain(())
+    player_bullet_sprites = pygame.sprite.RenderPlain(())
+    enemy_bullet_sprites = pygame.sprite.RenderPlain(())
     pygame.display.flip()
     
+    # Set user events.
+    enemy_shoot_event = USEREVENT + 1
+    difficulty_up_event = USEREVENT + 2
+
+    pygame.time.set_timer(enemy_shoot_event, 500)
+
     going = True
     while going:
-        clock.tick(60)
+        clock.tick(70)
 
         key_state = pygame.key.get_pressed()
 
@@ -167,26 +175,28 @@ def main():
             player.move_right()  
             # player.move_right()
         if key_state[K_SPACE]:
-            temp_rect = player.rect
-            bullet_sprites.add(Bullet(temp_rect))
+            player_bullet_sprites.add(Bullet(player.rect))
 
         # Handling the input events
         for event in pygame.event.get():
             if event.type == QUIT:
                 going = False
+            if event.type == enemy_shoot_event:
+                enemy_bullet_sprites.add(Bullet(enemy.rect, -20))
 
-        # Move the enemy.
+        # Enemy move
         enemy.update()
-
+        
         player_sprites.update()
         enemy_sprites.update()
-        bullet_sprites.update()
+        player_bullet_sprites.update("right")
+        enemy_bullet_sprites.update("left")
         screen.blit(background, (0, 0))
 
         player_sprites.draw(screen)
         enemy_sprites.draw(screen)
-        bullet_sprites.draw(screen)
-
+        player_bullet_sprites.draw(screen)
+        enemy_bullet_sprites.draw(screen)
         pygame.display.flip()
     
     pygame.quit()
