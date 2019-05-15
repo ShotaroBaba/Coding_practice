@@ -3,6 +3,8 @@ import os, pygame
 from pygame.locals import *
 from pygame.compat import geterror
 import time
+from random import randint
+
 if not pygame.font: print('Warning, fonts disabled')
 if not pygame.mixer: print('Warning, sound disabled')
 
@@ -44,13 +46,12 @@ def load_sound(name):
 class Bullet(pygame.sprite.Sprite):
     # Later the move value might be added for
     # achieving flexibility.
-    def __init__(self, player_rect, pos_pad = 0):
+    def __init__(self, player_rect, pos_pad = (-20, -20)):
         pygame.sprite.Sprite.__init__(self)
         self.image, self.rect = load_image('bullet.png', -1)
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
-        
-        new_pos = self.rect.move((player_rect.right + pos_pad, player_rect.top - bullet_pos_pad_height))
+        new_pos = self.rect.move((player_rect.right + pos_pad[0], player_rect.top - pos_pad[1]))
         self.rect = new_pos
 
     # Move left every time
@@ -107,23 +108,26 @@ class Enemy(pygame.sprite.Sprite):
         self.image, self.rect = load_image('enemy.png', -1)
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
-
+        
         newpos = self.rect.move((self.area.right - self.rect.right,0))
         self.rect = newpos
-
+        # self.origin_rect = newpos
     def update(self):
         newpos = self.rect.move((-1, 0))
         self.rect = newpos
         if self.rect.left < self.area.left:
             newpos = self.rect.move((self.area.right - self.rect.right,0))
             self.rect = newpos
-    
+            self.rect.y = randint(0, self.area.bottom - self.area.top - (self.rect.bottom - self.rect.top))
+
     def is_collided_with(self, sprite):
         return self.rect.colliderect(sprite.rect)
 
 def main():
 
+    # Background is black.
     black = (0, 0, 0)
+
     # Conduct Initialization
     pygame.init()
     screen = pygame.display.set_mode((600, 480))
@@ -181,12 +185,15 @@ def main():
         for event in pygame.event.get():
             if event.type == QUIT:
                 going = False
+            
+            # Shoot every 0.5 seconds.
             if event.type == enemy_shoot_event:
-                enemy_bullet_sprites.add(Bullet(enemy.rect, -20))
+                enemy_bullet_sprites.add(Bullet(enemy.rect, (-30, -20)))
 
         # Enemy move
         enemy.update()
         
+        # Update locations
         player_sprites.update()
         enemy_sprites.update()
         player_bullet_sprites.update("right")
