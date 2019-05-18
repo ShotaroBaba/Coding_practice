@@ -73,7 +73,10 @@ class Bullet(pygame.sprite.Sprite):
             self.rect.bottom > self.area.bottom or \
             self.rect.top < self.area.top:
                 self.kill()
-
+    def is_collided_with(self, sprite):
+        if self.rect.colliderect(sprite.rect):
+            sprite.kill()
+            self.kill()
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -120,8 +123,6 @@ class Enemy(pygame.sprite.Sprite):
             self.rect = newpos
             self.rect.y = randint(0, self.area.bottom - self.area.top - (self.rect.bottom - self.rect.top))
 
-    def is_collided_with(self, sprite):
-        return self.rect.colliderect(sprite.rect)
 
 def main():
 
@@ -159,6 +160,7 @@ def main():
     pygame.time.set_timer(enemy_shoot_event, 500)
 
     going = True
+    count = 0
     while going:
         clock.tick(70)
 
@@ -180,7 +182,26 @@ def main():
             # player.move_right()
         if key_state[K_SPACE]:
             player_bullet_sprites.add(Bullet(player.rect))
+        
+        if pygame.sprite.spritecollide(enemy, player_bullet_sprites,True):
+            count += 1
 
+        if count > 9:
+            enemy.kill()
+            count = 0
+            del enemy
+
+        try:
+            enemy
+        except NameError:
+            enemy_exists = False
+        else:
+            enemy_exists = True
+
+        if not enemy_exists:
+            enemy = Enemy()
+            enemy_sprites.add(enemy)
+        
         # Handling the input events
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -198,6 +219,8 @@ def main():
         enemy_sprites.update()
         player_bullet_sprites.update("right")
         enemy_bullet_sprites.update("left")
+        
+        # Collided with enemy
         screen.blit(background, (0, 0))
 
         player_sprites.draw(screen)
