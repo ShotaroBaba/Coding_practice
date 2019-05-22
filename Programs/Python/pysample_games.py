@@ -12,6 +12,9 @@ if not pygame.mixer: print('Warning, sound disabled')
 data_dir = "../data/test_game_data"
 
 bullet_pos_pad_height = -20
+enemy_shoot_interval = 500
+enemy_generate_interval = 800
+
 
 # Method to load image [1]
 def load_image(name, colorkey=None):
@@ -105,8 +108,10 @@ class Player(pygame.sprite.Sprite):
             newpos = self.rect.move((1, 0))
             self.rect = newpos
 
+
+# If enemy is normal, then it is counted as 10.
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, num_count = 10, rect_random = False):
         pygame.sprite.Sprite.__init__(self)
         self.image, self.rect = load_image('enemy.png', -1)
         screen = pygame.display.get_surface()
@@ -114,6 +119,10 @@ class Enemy(pygame.sprite.Sprite):
         
         newpos = self.rect.move((self.area.right - self.rect.right,0))
         self.rect = newpos
+        if rect_random:
+            self.rect.y = randint(0, self.area.bottom - self.area.top - (self.rect.bottom - self.rect.top))
+        self.count = 0
+        self.num_count = num_count
         # self.origin_rect = newpos
     def update(self):
         newpos = self.rect.move((-1, 0))
@@ -123,6 +132,13 @@ class Enemy(pygame.sprite.Sprite):
             self.rect = newpos
             self.rect.y = randint(0, self.area.bottom - self.area.top - (self.rect.bottom - self.rect.top))
 
+
+    def hit(self):
+        self.count += 1
+        # enemy defeated if a certain number of bullet are hit.
+        if(self.count > self.num_count):
+            self.kill()
+            del self
 
 def main():
 
@@ -153,11 +169,14 @@ def main():
     enemy_bullet_sprites = pygame.sprite.RenderPlain(())
     pygame.display.flip()
     
-    # Set user events.
+    # Set user events and timer.
     enemy_shoot_event = USEREVENT + 1
     difficulty_up_event = USEREVENT + 2
+    enemy_added_event = USEREVENT + 3
 
-    pygame.time.set_timer(enemy_shoot_event, 500)
+    # Will 
+    pygame.time.set_timer(enemy_shoot_event, enemy_shoot_interval)
+    pygame.time.set_timer(enemy_added_event, enemy_generate_interval)
 
     going = True
     count = 0
@@ -182,25 +201,12 @@ def main():
             # player.move_right()
         if key_state[K_SPACE]:
             player_bullet_sprites.add(Bullet(player.rect))
-        
-        if pygame.sprite.spritecollide(enemy, player_bullet_sprites,True):
-            count += 1
 
-        if count > 9:
-            enemy.kill()
-            count = 0
-            del enemy
+        for i, _ in pygame.sprite.groupcollide(enemy_sprites, player_bullet_sprites, dokilla = False, dokillb = True).items():
+            i.hit()
 
-        try:
-            enemy
-        except NameError:
-            enemy_exists = False
-        else:
-            enemy_exists = True
-
-        if not enemy_exists:
-            enemy = Enemy()
-            enemy_sprites.add(enemy)
+        if len(enemy_sprites.sprites()) == 0:
+            enemy_sprites.add(Enemy(rect_random = True))
         
         # Handling the input events
         for event in pygame.event.get():
@@ -209,11 +215,15 @@ def main():
             
             # Shoot every 0.5 seconds.
             if event.type == enemy_shoot_event:
-                enemy_bullet_sprites.add(Bullet(enemy.rect, (-30, -20)))
+                for ene in enemy_sprites.sprites():
+                    enemy_bullet_sprites.add(Bullet(ene.rect, (-30, -20)))
+            if event.type == enemy_added_event:
+                enemy_sprites.add(Enemy(rect_random = True))
 
         # Enemy move
-        enemy.update()
-        
+        for ene in enemy_sprites.sprites():
+            ene.update()
+
         # Update locations
         player_sprites.update()
         enemy_sprites.update()
