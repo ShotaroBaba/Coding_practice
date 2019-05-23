@@ -49,17 +49,18 @@ def load_sound(name):
 class Bullet(pygame.sprite.Sprite):
     # Later the move value might be added for
     # achieving flexibility.
-    def __init__(self, player_rect, pos_pad = (-20, -20)):
+    def __init__(self, player_rect, pos_pad = (-20, -20), bullet_image = "bullet.png"):
         pygame.sprite.Sprite.__init__(self)
-        self.image, self.rect = load_image('bullet.png', -1)
+        self.image, self.rect = load_image(bullet_image, -1)
         screen = pygame.display.get_surface()
+        self.mask = pygame.mask.from_surface(self.image)
         self.area = screen.get_rect()
         new_pos = self.rect.move((player_rect.right + pos_pad[0], player_rect.top - pos_pad[1]))
         self.rect = new_pos
 
     # Move left every time
+    # TODO: Bullet can track the movement of the player.
     def update(self, left_or_right):
-
         if left_or_right == "right":
             newpos = self.rect.move((1, 0))
             self.rect = newpos
@@ -76,6 +77,7 @@ class Bullet(pygame.sprite.Sprite):
             self.rect.bottom > self.area.bottom or \
             self.rect.top < self.area.top:
                 self.kill()
+    
     def is_collided_with(self, sprite):
         if self.rect.colliderect(sprite.rect):
             sprite.kill()
@@ -87,7 +89,8 @@ class Player(pygame.sprite.Sprite):
         self.image, self.rect = load_image('player.png', -1)
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
-
+        self.mask = pygame.mask.from_surface(self.image)
+        
     def move_down(self):
         if self.rect.bottom < self.area.bottom:
             newpos = self.rect.move((0, 1))
@@ -116,14 +119,14 @@ class Enemy(pygame.sprite.Sprite):
         self.image, self.rect = load_image('enemy.png', -1)
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
-        
+        self.mask = pygame.mask.from_surface(self.image)
         newpos = self.rect.move((self.area.right - self.rect.right,0))
         self.rect = newpos
         if rect_random:
             self.rect.y = randint(0, self.area.bottom - self.area.top - (self.rect.bottom - self.rect.top))
         self.count = 0
         self.num_count = num_count
-        # self.origin_rect = newpos
+
     def update(self):
         newpos = self.rect.move((-1, 0))
         self.rect = newpos
@@ -202,7 +205,7 @@ def main():
         if key_state[K_SPACE]:
             player_bullet_sprites.add(Bullet(player.rect))
 
-        for i, _ in pygame.sprite.groupcollide(enemy_sprites, player_bullet_sprites, dokilla = False, dokillb = True).items():
+        for i, _ in pygame.sprite.groupcollide(enemy_sprites, player_bullet_sprites, dokilla = False, dokillb = True, collided = pygame.sprite.collide_mask).items():
             i.hit()
 
         if len(enemy_sprites.sprites()) == 0:
@@ -216,7 +219,7 @@ def main():
             # Shoot every 0.5 seconds.
             if event.type == enemy_shoot_event:
                 for ene in enemy_sprites.sprites():
-                    enemy_bullet_sprites.add(Bullet(ene.rect, (-30, -20)))
+                    enemy_bullet_sprites.add(Bullet(ene.rect, (-30, -15), "enemy_bullet.png"))
             if event.type == enemy_added_event:
                 enemy_sprites.add(Enemy(rect_random = True))
 
