@@ -4,7 +4,7 @@
 # Firstly generating class with weight.
 
 # Dijestra
-def dijestra(graph, data):
+def dijkstra(graph, data):
 
 
     pass
