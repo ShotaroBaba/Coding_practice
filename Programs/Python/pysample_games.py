@@ -14,6 +14,7 @@ data_dir = "../data/test_game_data"
 bullet_pos_pad_height = -20
 enemy_shoot_interval = 500
 enemy_generate_interval = 800
+out_of_screen_margin = 80
 
 
 # Method to load image [1]
@@ -32,6 +33,7 @@ def load_image(name, colorkey=None):
     return image, image.get_rect()
 
 # Method to load sound [1]
+# Will be added later.
 def load_sound(name):
     class NoneSound:
         def play(self): pass
@@ -77,11 +79,13 @@ class Bullet(pygame.sprite.Sprite):
             self.rect.bottom > self.area.bottom or \
             self.rect.top < self.area.top:
                 self.kill()
-    
-    def is_collided_with(self, sprite):
-        if self.rect.colliderect(sprite.rect):
-            sprite.kill()
+
+    def hit(self):
+        self.count += 1
+        # enemy defeated if a certain number of bullet are hit.
+        if(self.count > self.num_count):
             self.kill()
+            del self
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -90,7 +94,12 @@ class Player(pygame.sprite.Sprite):
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        
+        self.num_count = 10
+        self.count = 0
+
+        # TODO: Implement level up later
+        self.power_up = 0
+
     def move_down(self):
         if self.rect.bottom < self.area.bottom:
             newpos = self.rect.move((0, 1))
@@ -111,6 +120,12 @@ class Player(pygame.sprite.Sprite):
             newpos = self.rect.move((1, 0))
             self.rect = newpos
 
+    def hit(self):
+        self.count += 1
+        # Player is defeated if a certain number of bullet are hit.
+        if(self.count > self.num_count):
+            self.kill()
+            del self
 
 # If enemy is normal, then it is counted as 10.
 class Enemy(pygame.sprite.Sprite):
@@ -120,18 +135,19 @@ class Enemy(pygame.sprite.Sprite):
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        newpos = self.rect.move((self.area.right - self.rect.right,0))
+        newpos = self.rect.move((self.area.right - self.rect.right + out_of_screen_margin,0))
         self.rect = newpos
         if rect_random:
             self.rect.y = randint(0, self.area.bottom - self.area.top - (self.rect.bottom - self.rect.top))
         self.count = 0
         self.num_count = num_count
-
+        self.out_of_screen_left = self.area.left - out_of_screen_margin
+    
     def update(self):
         newpos = self.rect.move((-1, 0))
         self.rect = newpos
-        if self.rect.left < self.area.left:
-            newpos = self.rect.move((self.area.right - self.rect.right,0))
+        if self.rect.left < self.out_of_screen_left:
+            newpos = self.rect.move((self.area.right - self.rect.right + out_of_screen_margin,0))
             self.rect = newpos
             self.rect.y = randint(0, self.area.bottom - self.area.top - (self.rect.bottom - self.rect.top))
 
@@ -172,12 +188,12 @@ def main():
     enemy_bullet_sprites = pygame.sprite.RenderPlain(())
     pygame.display.flip()
     
-    # Set user events and timer.
+    # Set user events and timer
     enemy_shoot_event = USEREVENT + 1
     difficulty_up_event = USEREVENT + 2
     enemy_added_event = USEREVENT + 3
 
-    # Will 
+    # Set the timers for these events
     pygame.time.set_timer(enemy_shoot_event, enemy_shoot_interval)
     pygame.time.set_timer(enemy_added_event, enemy_generate_interval)
 
@@ -204,12 +220,6 @@ def main():
             # player.move_right()
         if key_state[K_SPACE]:
             player_bullet_sprites.add(Bullet(player.rect))
-
-        for i, _ in pygame.sprite.groupcollide(enemy_sprites, player_bullet_sprites, dokilla = False, dokillb = True, collided = pygame.sprite.collide_mask).items():
-            i.hit()
-
-        if len(enemy_sprites.sprites()) == 0:
-            enemy_sprites.add(Enemy(rect_random = True))
         
         # Handling the input events
         for event in pygame.event.get():
@@ -226,6 +236,20 @@ def main():
         # Enemy move
         for ene in enemy_sprites.sprites():
             ene.update()
+
+        # Check whether the player bullet is hit by the enemy.
+        for i in pygame.sprite.groupcollide(enemy_sprites, player_bullet_sprites, dokilla = False, dokillb = True, collided = pygame.sprite.collide_mask).keys():
+            i.hit()
+
+        # If the player is hit by the enemy, then it will disappear
+        pygame.sprite.groupcollide(enemy_sprites, player_sprites, dokilla = True, dokillb = True, collided = pygame.sprite.collide_mask)
+        
+        # Check whether the enemy bullet is hit by the player.
+        if pygame.sprite.spritecollide(player, enemy_bullet_sprites, True, collided = pygame.sprite.collide_mask) != []:
+            player.hit()
+
+        if len(enemy_sprites.sprites()) == 0:
+            enemy_sprites.add(Enemy(rect_random = True))
 
         # Update locations
         player_sprites.update()
