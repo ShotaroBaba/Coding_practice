@@ -38,16 +38,7 @@ def make_maze_grid(height = height_default, width = width_default):
             
             next_x = current_x + direction[move_direction][0]
             next_y = current_y + direction[move_direction][1]
-            # print("Next Direction")
-            # print("x: " + str(next_x))
-            # print("y: "+ str(next_y))
-            # print("Direction")
-            # print(move_direction)
-            # print(0 <= next_x < len(grid[0]))
-            # print(0 <= next_y < len(grid))
-            #print(grid[next_x][next_y])
 
-            # If the maze is out of range and 
             if 0 <= next_x < len(grid[0]) and 0 <= next_y < len(grid) and grid[next_x][next_y] == []:
                 grid[current_x][current_y].append(opposite_direction[move_direction])
                 grid[next_x][next_y].append(move_direction)
@@ -58,18 +49,20 @@ def make_maze_grid(height = height_default, width = width_default):
 
     return grid
 
+# Create maze first.
 def print_maze_grid(grid):
-
-    maze_str = ""
     # Print maze based on the information on grid.
 
-    for i in range( 2*(len(grid[0])) + 1):
-        maze_str += "_"
+    # String used for generating maze.
+    maze_str = ""
 
-    for i in range( 2*(len(grid[0])) + 1):
-        maze_str += "_"
-
-    
+    for y in range(2 * len(grid[0]) + 1):
+        for x in range(2 * len(grid) + 1):
+            if x % 2 == 1 and y % 2 == 1: 
+                maze_str += "#"
+            else:
+                maze_str += "w"
+        maze_str += "\n"
     print(maze_str)
 
 
