@@ -52,20 +52,45 @@ def make_maze_grid(height = height_default, width = width_default):
 # Create maze first.
 def print_maze_grid(grid):
     # Print maze based on the information on grid.
-
     # String used for generating maze.
     maze_str = ""
 
-    for y in range(2 * len(grid[0]) + 1):
-        for x in range(2 * len(grid) + 1):
+    range_x = range(2 * len(grid[0]) + 1)
+    range_y = range(2 * len(grid) + 1)
+    max_x = len(list(range_x)) - 1
+    max_y = len(list(range_y)) - 1
+    for y in range_y:
+        for x in range_x:
             if x % 2 == 1 and y % 2 == 1: 
-                maze_str += "#"
+                maze_str += " "
+            elif x % 2 == 0 and y % 2 == 1:
+                if (x == 0 or x == max_x):
+                    maze_str += "w"
+                else:
+                    # if W --> E or E --> W then the wall is removed.
+                    if "W" in grid[x//2-1][y//2] and "E" in grid[x//2][y//2]\
+                    or "E" in grid[x//2-1][y//2] and "W" in grid[x//2][y//2]:
+                        maze_str += " "
+                    # if not, the wall is retained.
+                    else:
+                        maze_str += "w" 
+            elif y % 2 == 0 and x % 2 == 1:
+                if(y == 0 or y == max_y):
+                    maze_str += "w"
+                else:
+                    # if W --> E or E --> W then the wall is removed.
+                    if "N" in grid[x//2][y//2 -1] and "S" in grid[x//2][y//2]\
+                    or "S" in grid[x//2][y//2 -1] and "N" in grid[x//2][y//2]:
+                        maze_str += " "
+                    # if not, the wall is retained.
+                    else:
+                        maze_str += "w" 
             else:
                 maze_str += "w"
         maze_str += "\n"
     print(maze_str)
 
-
+print_maze_grid(make_maze_grid(5,5))
 # TODO: Putting codes in the main program.
 def main():
     grid = make_maze_grid()
