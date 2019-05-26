@@ -4,7 +4,8 @@
 # import time
 
 from random import shuffle
-
+from random import randint
+randint(1,2)
 # This game will become Role Playing Game where a person 
 # walks around the maze and fights with foes. Backtracing algorithm is used
 # for generating maze.
@@ -22,7 +23,7 @@ opposite_direction  = {"N":"S", "S":"N", "E":"W", "W":"E"}
 height_default = 5
 width_default = 5
 
-def make_maze_grid(height = height_default, width = width_default):
+def make_maze_grid(width = height_default, height = width_default):
 
     grid = [[[] for _ in range(width)] for _ in range(height)]
 
@@ -32,7 +33,6 @@ def make_maze_grid(height = height_default, width = width_default):
         move_directions = ["N","S","E","W"]
 
         shuffle(move_directions)
-        # print("(((STEP)))")
 
         for move_direction in move_directions:
             
@@ -43,9 +43,8 @@ def make_maze_grid(height = height_default, width = width_default):
                 grid[current_x][current_y].append(opposite_direction[move_direction])
                 grid[next_x][next_y].append(move_direction)
                 generate_maze_grid(next_x, next_y)
-            # print(grid)
 
-    generate_maze_grid(0,0)
+    generate_maze_grid(randint(0, width-1), randint(0, height-1))
 
     return grid
 
@@ -67,9 +66,8 @@ def print_maze_grid(grid):
                 if (x == 0 or x == max_x):
                     maze_str += "w"
                 else:
-                    # if W --> E or E --> W then the wall is removed.
-                    if "W" in grid[x//2-1][y//2] and "E" in grid[x//2][y//2]\
-                    or "E" in grid[x//2-1][y//2] and "W" in grid[x//2][y//2]:
+                    # if W --> E
+                    if "W" in grid[x//2-1][y//2] and "E" in grid[x//2][y//2]:
                         maze_str += " "
                     # if not, the wall is retained.
                     else:
@@ -78,9 +76,9 @@ def print_maze_grid(grid):
                 if(y == 0 or y == max_y):
                     maze_str += "w"
                 else:
-                    # if W --> E or E --> W then the wall is removed.
-                    if "N" in grid[x//2][y//2 -1] and "S" in grid[x//2][y//2]\
-                    or "S" in grid[x//2][y//2 -1] and "N" in grid[x//2][y//2]:
+                    # if N --> S, then the wall is removed.
+                    if "N" in grid[x//2][y//2 -1] and "S" in grid[x//2][y//2]:
+                
                         maze_str += " "
                     # if not, the wall is retained.
                     else:
@@ -90,7 +88,29 @@ def print_maze_grid(grid):
         maze_str += "\n"
     print(maze_str)
 
-print_maze_grid(make_maze_grid(5,5))
+    return maze_str
+
+# Create maze first.
+def print_maze_grid_test(grid):
+    # Print maze based on the information on grid.
+
+    # String used for generating maze.
+    maze_str = ""
+
+    for y in range(2 * len(grid[0]) + 1):
+        for x in range(2 * len(grid) + 1):
+            if x % 2 == 1 and y % 2 == 1:
+                maze_str += " "
+            else:
+                maze_str += "w"
+        maze_str += "\n"
+    print(maze_str)
+
+
+grid = make_maze_grid(10,10)
+print_maze_grid_test(grid)
+print_maze_grid(grid)
+
 # TODO: Putting codes in the main program.
 def main():
     grid = make_maze_grid()
