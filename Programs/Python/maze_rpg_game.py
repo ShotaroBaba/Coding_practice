@@ -1,16 +1,10 @@
-# import os, pygame
-# from pygame.locals import *
-# from pygame.compat import geterror
-# import time
 
 from random import shuffle
 from random import randint
-randint(1,2)
+
 # This game will become Role Playing Game where a person 
 # walks around the maze and fights with foes. Backtracing algorithm is used
 # for generating maze.
-
-# TODO: Create the algorithm for generating maze.
 
 # Initiall create the grid
 # The form of the grid is as follows:
@@ -22,6 +16,56 @@ opposite_direction  = {"N":"S", "S":"N", "E":"W", "W":"E"}
 
 height_default = 5
 width_default = 5
+
+# Python Player class.
+class Player(object):
+
+    # hp: Hit point
+    # mp: magic point
+    # ep: energy point
+    self.hp = 100
+    self.mp = 100
+    self.ep = 100
+
+    # The maximum number of items that player can hold
+    self.max_item_hold = 10
+
+    # Player's current hit point
+    self.exp = 0
+
+    # Player's necessary experience points.
+    self.next_exp = 100
+
+    # Item numbers is recorded in the dictionary type.
+    self.items = {}
+
+    # TODO Create the skill classes for users
+    self.skills = None
+
+# This includes passive skills and active skills
+# Skills can be anything.
+class Skills(object):
+    
+    def __init(self):
+
+        # The spend mp and hp for using skills
+        self.spend_mp = 0
+        self.spend_hp = 0
+
+
+        
+    pass
+
+# This is an item class, this includes weapon, shields and potions.
+# Item might have the skills in some cases.
+class Items(object):
+    pass
+
+# Python Enemy class.
+# Currently, there is no images for foes.
+class Foe(object):
+
+    pass
 
 def make_maze_grid(width = height_default, height = width_default):
 
