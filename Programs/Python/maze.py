@@ -39,9 +39,9 @@ def make_maze_grid(width = height_default, height = width_default):
             next_x = current_x + direction[move_direction][0]
             next_y = current_y + direction[move_direction][1]
 
-            if 0 <= next_x < len(grid[0]) and 0 <= next_y < len(grid) and grid[next_x][next_y] == []:
-                grid[current_x][current_y].append(opposite_direction[move_direction])
-                grid[next_x][next_y].append(move_direction)
+            if 0 <= next_x < len(grid[0]) and 0 <= next_y < len(grid) and grid[next_y][next_x] == []:
+                grid[current_y][current_x].append(opposite_direction[move_direction])
+                grid[next_y][next_x].append(move_direction)
                 generate_maze_grid(next_x, next_y)
 
     generate_maze_grid(randint(0, width-1), randint(0, height-1))
@@ -67,7 +67,7 @@ def print_maze_grid(grid):
                     maze_str += "w"
                 else:
                     # if W --> E
-                    if "W" in grid[x//2-1][y//2] and "E" in grid[x//2][y//2]:
+                    if "W" in grid[y//2][x//2-1] and "E" in grid[y//2][x//2]:
                         maze_str += " "
                     # if not, the wall is retained.
                     else:
@@ -77,7 +77,7 @@ def print_maze_grid(grid):
                     maze_str += "w"
                 else:
                     # if N --> S, then the wall is removed.
-                    if "N" in grid[x//2][y//2 -1] and "S" in grid[x//2][y//2]:
+                    if "N" in grid[y//2 -1][x//2]and "S" in grid[y//2][x//2]:
                 
                         maze_str += " "
                     # if not, the wall is retained.
@@ -107,7 +107,7 @@ def print_maze_grid_test(grid):
     print(maze_str)
 
 
-grid = make_maze_grid(10,10)
+grid = make_maze_grid(50,10)
 print_maze_grid_test(grid)
 print_maze_grid(grid)
 
