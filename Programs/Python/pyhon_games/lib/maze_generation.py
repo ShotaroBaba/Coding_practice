@@ -1,71 +1,32 @@
-
 from random import shuffle
 from random import randint
+
+height_default = 5
+width_default = 5
 
 # This game will become Role Playing Game where a person 
 # walks around the maze and fights with foes. Backtracing algorithm is used
 # for generating maze.
 
-# Initiall create the grid
+# Initialize and create the grid
 # The form of the grid is as follows:
 
+# wwwwwwwwwwwwwwww
+# w#w#w#w#w#w#w#ww
+# wwwwwwwwwwwwwwww
+# w#w#w#w#w#w#w#ww
+# wwwwwwwwwwwwwwww
+# w#w#w#w#w#w#w#ww
+# wwwwwwwwwwwwwwww
+# w#w#w#w#w#w#w#ww
+# wwwwwwwwwwwwwwww
+# w#w#w#w#w#w#w#ww
+# wwwwwwwwwwwwwwww
+
+# Set direction.
 direction = {"N": (0,-1), "S":(0,1),"E":(1,0), "W":(-1,0)}
 opposite_direction  = {"N":"S", "S":"N", "E":"W", "W":"E"}
-# Firstly, make grid using list.
-# height and width must be number
 
-height_default = 5
-width_default = 5
-
-# Python Player class.
-class Player(object):
-
-    # hp: Hit point
-    # mp: magic point
-    # ep: energy point
-    self.hp = 100
-    self.mp = 100
-    self.ep = 100
-
-    # The maximum number of items that player can hold
-    self.max_item_hold = 10
-
-    # Player's current hit point
-    self.exp = 0
-
-    # Player's necessary experience points.
-    self.next_exp = 100
-
-    # Item numbers is recorded in the dictionary type.
-    self.items = {}
-
-    # TODO Create the skill classes for users
-    self.skills = None
-
-# This includes passive skills and active skills
-# Skills can be anything.
-class Skills(object):
-    
-    def __init(self):
-
-        # The spend mp and hp for using skills
-        self.spend_mp = 0
-        self.spend_hp = 0
-
-
-        
-    pass
-
-# This is an item class, this includes weapon, shields and potions.
-# Item might have the skills in some cases.
-class Items(object):
-    pass
-
-# Python Enemy class.
-# Currently, there is no images for foes.
-class Foe(object):
-
-    pass
 
 def make_maze_grid(width = height_default, height = width_default):
 
@@ -93,7 +54,7 @@ def make_maze_grid(width = height_default, height = width_default):
     return grid
 
 # Create maze first.
-def print_maze_grid(grid):
+def generate_maze_grid(grid):
     # Print maze based on the information on grid.
     # String used for generating maze.
     maze_str = ""
@@ -130,37 +91,33 @@ def print_maze_grid(grid):
             else:
                 maze_str += "w"
         maze_str += "\n"
-    print(maze_str)
 
     return maze_str
 
-# Create maze first.
-def print_maze_grid_test(grid):
-    # Print maze based on the information on grid.
-
-    # String used for generating maze.
-    maze_str = ""
-
-    for y in range(2 * len(grid[0]) + 1):
-        for x in range(2 * len(grid) + 1):
-            if x % 2 == 1 and y % 2 == 1:
-                maze_str += " "
-            else:
-                maze_str += "w"
-        maze_str += "\n"
-    print(maze_str)
-
-
-grid = make_maze_grid(50,10)
-print_maze_grid_test(grid)
-print_maze_grid(grid)
-
-# TODO: Putting codes in the main program.
 def main():
-    grid = make_maze_grid()
 
-    print(grid)
-    pass
+    print("Test maze generation (1)")
+    grid = make_maze_grid(10,10)
+    maze_str = generate_maze_grid(grid)
+    print(maze_str)
+    print("\n\n")
+
+    print("Test maze generation (2)")
+    grid = make_maze_grid(10,40)
+    maze_str = generate_maze_grid(grid)
+    print(maze_str)
+    print("\n\n")
+
+    print("Test maze generation (3)")
+    grid = make_maze_grid(40,10)
+    maze_str = generate_maze_grid(grid)
+    print(maze_str)
+    print("\n\n")
+
+    print("Test maze generation (4)")
+    grid = make_maze_grid(30,30)
+    maze_str = generate_maze_grid(grid)
+    print(maze_str)
 
 if __name__ == '__main__':
     main()
