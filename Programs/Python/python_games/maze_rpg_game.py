@@ -140,8 +140,18 @@ class MazeObject(object):
         pass
 
     # Move characters when the enemy
-    def move_character(self, key_event):
+    def move_object_up(self, key_event):
         pass
+
+    def move_object_down(self, key_event):
+        pass
+
+    def move_object_left(self, key_event):
+        pass
+    
+    def move_object_right(self, key_event):
+        pass
+
 
 
 # This includes passive skills and active skills used by player, enemy and objects.
@@ -175,6 +185,7 @@ class Skills(object):
 
         self.random_range = 1.05
 
+    # Target can be the persons
     def activate_skills(self, target):
         if self.is_random:
             pass
@@ -183,14 +194,34 @@ class Skills(object):
 
 # This is an item class, this includes weapon, shields and potions.
 # Item might also have the skills in some cases.
+
 class Items(object):
 
-    def __init__(self):
-        self.hp_change = 0
-        self.mp_change = 0
-        self.sp_change = 0
-        self.ep_change = 0
-    pass
+    def __init__(self, json_data = {}):
+
+        # The values of changes of the status values
+        self.status_change = ""
+
+        self.hp_change = json_data["hp_change"] if json_data != {} else 100
+        self.mp_change = json_data["mp_change"] if json_data != {} else 100
+        self.sp_change = json_data["sp_change"] if json_data != {} else 100
+        self.ep_change = json_data["ep_change"] if json_data != {} else 100
+
+        self.strength_change = json_data["strength_change"] if json_data != {} else 10
+        self.agility_change  = json_data["agility_change"] if json_data != {} else 10
+        self.vitality_change  = json_data["vitality_change"] if json_data != {} else 10
+        self.dexterity_change  = json_data["dexterity_change"] if json_data != {} else 10
+
+        self.smartness_change  = json_data["smartness_change"] if json_data != {} else 10
+        self.magic_power_change  = json_data["magic_power_change"] if json_data != {} else 10
+        self.mental_strength_change  = json_data["mental_strength_change"] if json_data != {} else 10
+        
+        # TODO: Implement luckiness effects
+        self.luckiness = json_data["luckiness"] if json_data != {} else 10
+        
+        self.durablity_change = json_data["durablity_change"] if json_data != {} else 10
+
+
 
 # TODO: Create the enchantment class.
 class Enchantment(object):
@@ -217,6 +248,8 @@ class Map(object):
 class Menu(object):
     def __init__():
         pass
+
+
 
 # TODO: Putting codes in the main program.
 def main():
