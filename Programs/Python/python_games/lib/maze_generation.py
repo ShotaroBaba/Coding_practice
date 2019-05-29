@@ -57,42 +57,45 @@ def make_maze_grid(width = height_default, height = width_default):
 def generate_maze_grid(grid):
     # Print maze based on the information on grid.
     # String used for generating maze.
-    maze_str = ""
 
     range_x = range(2 * len(grid[0]) + 1)
     range_y = range(2 * len(grid) + 1)
     max_x = len(list(range_x)) - 1
     max_y = len(list(range_y)) - 1
+
+    maze_list = []
+    tmp = []
     for y in range_y:
+        tmp = []
         for x in range_x:
             if x % 2 == 1 and y % 2 == 1: 
-                maze_str += " "
+                tmp.append(" ")
             elif x % 2 == 0 and y % 2 == 1:
                 if (x == 0 or x == max_x):
-                    maze_str += "w"
+                    tmp.append("#")
                 else:
                     # if W --> E
                     if "W" in grid[y//2][x//2-1] and "E" in grid[y//2][x//2]:
-                        maze_str += " "
+                        tmp.append(" ")
                     # if not, the wall is retained.
                     else:
-                        maze_str += "w" 
+                        tmp.append("#")
             elif y % 2 == 0 and x % 2 == 1:
                 if(y == 0 or y == max_y):
-                    maze_str += "w"
+                    tmp.append("#")
                 else:
                     # if N --> S, then the wall is removed.
                     if "N" in grid[y//2 -1][x//2]and "S" in grid[y//2][x//2]:
-                
-                        maze_str += " "
+                        tmp.append(" ")
                     # if not, the wall is retained.
                     else:
-                        maze_str += "w" 
+                        tmp.append("#")
             else:
-                maze_str += "w"
-        maze_str += "\n"
+                tmp.append("#")
 
-    return maze_str
+        maze_list.append(tmp)
+    
+    return maze_list
 
 def main():
 
