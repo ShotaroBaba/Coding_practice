@@ -1,12 +1,21 @@
 
 import sys
 sys.path.insert(0, 'lib/maze_generation.py')
+sys.path.insert(0, 'lib/getch.py')
+
+import os
+os.system("color 0") 
+
 
 from random import shuffle
 from random import randint
+from random import choice
+
+from lib.getch import _Getch
+
 from lib.maze_generation import generate_maze_grid, make_maze_grid
 
-
+getch = _Getch()
 # TODO: Difficulty will be selected
 
 # TODO: Separate the components and put them into different files
@@ -85,7 +94,7 @@ class MazeObject(object):
         self.object_pos = json_data["object_pos"] if json_data != {} else None
 
         # Check how the character is displayed.
-        self.displayed_character = json_data["displayed_character"] if json_data != {} else "#"
+        self.displayed_character = json_data["displayed_character"] if json_data != {} else "@"
 
         # The maximum number of items that Objects can hold
         # It can be increased by the level up.
@@ -196,9 +205,7 @@ class Skills(object):
 # Item might also have the skills in some cases.
 
 class Items(object):
-
     def __init__(self, json_data = {}):
-
         # The values of changes of the status values
         self.status_change = ""
 
@@ -234,27 +241,88 @@ class Map(object):
 
     # When initialised, Map object puts players and item boxes at the
     # places.
-
     def __init__(self, width, height):
-        self.map = generate_maze_grid(make_maze_grid(width,height))
+        self.map_grid = generate_maze_grid(make_maze_grid(width,height))
+        
+        self.hidden_map_grid = [["." for _ in range(len(self.map_grid))] for _ in range(len(self.map_grid[0]))]
+
+        self.direction = direction = {"N": (0,-1), "S":(0,1),"E":(1,0), "W":(-1,0)}
+
+        # Test purpose for putting player.
+        self.player = MazeObject()
+
+        self.randomly_place_player(self.player)
+
+        print(self.player.object_pos)
+        print(self.hidden_map_grid)
+        self.draw_map()
+    
+    # It is called every time the cursor is moved.
+    def move_player(self,player):
+        
         pass
 
+    # Randomly place player
+    def randomly_place_player(self,player):
+        space_list_to_place_player = []
+        for y in range(len(self.map_grid[0])):
+            for x in range(len(self.map_grid)):
+                if self.map_grid[x][y] == " ":
+                    space_list_to_place_player.append((x,y))
+        
+        # Choose the place where the player can begin journey
+        chosen_place = choice(space_list_to_place_player)
+        self.map_grid[chosen_place[0]][chosen_place[1]] = self.player.displayed_character
+        self.player.object_pos = chosen_place
+
+    # TODO: All the information of the map is hidden at the beginning.
+    def _reveal_maps_by_walking():
+        pass
+
+    # Draw the map on the screen.
+    def draw_map(self):
+        tmp_str = ""
+        # NOTE: x: height, y: length
+        for y in range(len(self.map_grid[0])):
+            for x in range(len(self.map_grid)):
+                if self.map_grid[x][y] == "@":
+                    tmp_str += "\033[91m" + self.map_grid[x][y] + "\033[0m"
+                else:
+                    tmp_str += self.map_grid[x][y]
+            tmp_str += "\n"
+        print(self.map_grid)
+        print(tmp_str)
+
     # Saves the data of the maps into json file.
-    def save_map_data():
+    def save_map_data(self):
         pass
 
 # Display menu so that users are able to control a person.
 # TODO: Create the menu class
-class Menu(object):
-    def __init__():
+
+class MainGame():
+    def __init__(self):
         pass
 
+class Menu(object):
+    def __init__(self):
+        pass
 
+    # Draw menu.
+    def draw_menu(self):
+        pass
 
 # TODO: Putting codes in the main program.
 def main():
-    first_map = Map(20,20)
-    pass
+    first_map = Map(10,10)
+    while True:
+        character = getch()
+        if character == b"n":
+            break
+        else:
+            print(character)
+            
+
 
 if __name__ == '__main__':
     main()
