@@ -317,7 +317,7 @@ def main():
     first_map = Map(10,10)
     while True:
         character = getch()
-        if character == b"n":
+        if character == b"n" or character == "n":
             break
         else:
             print(character)
