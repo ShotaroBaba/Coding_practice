@@ -32,7 +32,21 @@ class _GetchWindows:
 
     def __call__(self):
         import msvcrt
-        return msvcrt.getch()
+        basic_key = msvcrt.getch()
+        if basic_key == b"\xe0":
+            sub = msvcrt.getch()
+            if sub == b'H':
+                return 'UP_KEY'
+            elif sub == b'M':
+                return 'RIGHT_KEY'
+            elif sub == b'P':
+                return 'DOWN_KEY'
+            elif sub == b'K':
+                return 'LEFT_KEY'
+            else:
+                return sub
+        else:
+            return msvcrt.getch()
 
 # Reference: Yoo, D. (2002). getch()-like unbuffered character reading from stdin on both 
 #   windows and unix (Python recipe) [Source code].

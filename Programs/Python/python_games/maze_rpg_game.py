@@ -3,9 +3,10 @@ import sys
 sys.path.insert(0, 'lib/maze_generation.py')
 sys.path.insert(0, 'lib/getch.py')
 
+# Set the colors of characters in the terminal.
 import os
 os.system("color 0") 
-
+from copy import deepcopy
 
 from random import shuffle
 from random import randint
@@ -15,7 +16,15 @@ from lib.getch import _Getch
 
 from lib.maze_generation import generate_maze_grid, make_maze_grid
 
+
 getch = _Getch()
+
+# Initialize and set directions
+direction = {"N": (0,-1), "S":(0,1),"E":(1,0), "W":(-1,0)}
+
+# Set the directions to create...
+arrow_key_to_directions = {"UP_KEY": "N", "DOWN_KEY": "S", "RIGHT_KEY": "E", "LEFT_KEY": "W"}
+
 # TODO: Difficulty will be selected
 
 # TODO: Separate the components and put them into different files
@@ -194,7 +203,7 @@ class Skills(object):
 
         self.random_range = 1.05
 
-    # Target can be the persons
+    # Target can be the persons, or enemies
     def activate_skills(self, target):
         if self.is_random:
             pass
@@ -209,6 +218,7 @@ class Items(object):
         # The values of changes of the status values
         self.status_change = ""
 
+        # When used, the item will creates the following effects if they have...
         self.hp_change = json_data["hp_change"] if json_data != {} else 100
         self.mp_change = json_data["mp_change"] if json_data != {} else 100
         self.sp_change = json_data["sp_change"] if json_data != {} else 100
@@ -243,10 +253,11 @@ class Map(object):
     # places.
     def __init__(self, width, height):
         self.map_grid = generate_maze_grid(make_maze_grid(width,height))
-        
+        self.original_map_grid = deepcopy(self.map_grid)
+
         self.hidden_map_grid = [["." for _ in range(len(self.map_grid))] for _ in range(len(self.map_grid[0]))]
 
-        self.direction = direction = {"N": (0,-1), "S":(0,1),"E":(1,0), "W":(-1,0)}
+        self.direction = direction
 
         # Test purpose for putting player.
         self.player = MazeObject()
@@ -258,9 +269,27 @@ class Map(object):
         self.draw_map()
     
     # It is called every time the cursor is moved.
-    def move_player(self,player):
-        
-        pass
+    def move_player(self,str_direction):
+        pos_move = direction[arrow_key_to_directions[str_direction]]
+        next_player_pos = (self.player.object_pos[0] + pos_move[0],self.player.object_pos[1] + pos_move[1])
+        if self.original_map_grid[next_player_pos[0]][next_player_pos[1]] != "#":
+
+            
+            # Initialize map using originally created random map.
+            self.map_grid = deepcopy(self.original_map_grid)
+
+            # Place player on the map based on the move player made.
+            self.map_grid[next_player_pos[0]][next_player_pos[1]] = self.player.displayed_character
+
+            # Update player position.
+            self.player.object_pos = next_player_pos
+
+            # Draw new map.
+            self.draw_map()
+        else:
+            print ("Wall")
+            # Set the next move for the player.
+            #self.player.object_pos = next_player_pos
 
     # Randomly place player
     def randomly_place_player(self,player):
@@ -290,7 +319,9 @@ class Map(object):
                 else:
                     tmp_str += self.map_grid[x][y]
             tmp_str += "\n"
-        print(self.map_grid)
+        # print(self.map_grid)
+        
+        # Print map
         print(tmp_str)
 
     # Saves the data of the maps into json file.
@@ -300,9 +331,21 @@ class Map(object):
 # Display menu so that users are able to control a person.
 # TODO: Create the menu class
 
+# Create the object to start the game...
 class MainGame():
     def __init__(self):
-        pass
+        self.first_map = Map(10, 10)
+        self.manipulate_map()
+
+    def manipulate_map(self):
+        while True:
+            character = getch()
+            if character == b"n":
+                break
+            else:
+                if character in ["UP_KEY", "DOWN_KEY", "LEFT_KEY", "RIGHT_KEY"]:
+                    self.first_map.move_player(character)
+
 
 class Menu(object):
     def __init__(self):
@@ -312,17 +355,10 @@ class Menu(object):
     def draw_menu(self):
         pass
 
-# TODO: Putting codes in the main program.
+# TODO: Putting codes that allows player to move in the main program.
+# Create first main game here.
 def main():
-    first_map = Map(10,10)
-    while True:
-        character = getch()
-        if character == b"n" or character == "n":
-            break
-        else:
-            print(character)
-            
-
+    main_game = MainGame()
 
 if __name__ == '__main__':
     main()
