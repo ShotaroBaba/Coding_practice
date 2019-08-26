@@ -178,6 +178,8 @@ class MazeObject(object):
 # Load all of the skills.
 
 # TODO: The first task is to implement "Attack" skills
+
+# A number of skills are stored in the json file...
 class Skills(object):
 
     # The way to initialise the object is to use the JSON object files.    
@@ -190,6 +192,7 @@ class Skills(object):
         self.sp_change = sp_change
         self.ep_change = ep_change
         self.is_random = None
+        
         # Random is FALSE by default
         self.is_random_point_change = False
         self.is_random_skill_points = False
@@ -253,10 +256,15 @@ class Map(object):
     # When initialised, Map object puts players and item boxes at the
     # places.
     def __init__(self, width, height):
+        # Clear the screen before drawing map
         clear()
-        self.map_grid = generate_maze_grid(make_maze_grid(width,height))
-        self.original_map_grid = deepcopy(self.map_grid)
 
+        # Set the map_grid.
+        self.goal_symbol = "\033[91m" + "G" + "\033[0m"
+        self.goal_pos = None
+        self.map_grid = generate_maze_grid(make_maze_grid(width,height))
+        self.randomly_place_goals()
+        self.original_map_grid = deepcopy(self.map_grid)
         self.hidden_map_grid = [["." for _ in range(len(self.map_grid))] for _ in range(len(self.map_grid[0]))]
 
         self.direction = direction
@@ -264,7 +272,8 @@ class Map(object):
         # Test purpose for putting player.
         self.player = MazeObject()
 
-        self.randomly_place_player(self.player)
+        # Randomly place goal
+        self.randomly_place_object(self.player)
 
         self.draw_map()
     
@@ -288,7 +297,7 @@ class Map(object):
             self.draw_map()
 
     # Randomly place player
-    def randomly_place_player(self,player):
+    def randomly_place_object(self,player):
         space_list_to_place_player = []
         for y in range(len(self.map_grid[0])):
             for x in range(len(self.map_grid)):
@@ -299,6 +308,21 @@ class Map(object):
         chosen_place = choice(space_list_to_place_player)
         self.map_grid[chosen_place[0]][chosen_place[1]] = self.player.displayed_character
         self.player.object_pos = chosen_place
+
+    def randomly_place_goals(self):
+        
+        # Only one goal can be created
+        # Choose the place for a goal
+        space_list_to_place_goal = []
+        for y in range(len(self.map_grid[0])):
+            for x in range(len(self.map_grid)):
+                if self.map_grid[x][y] == " ":
+                    space_list_to_place_goal.append((x,y))
+        
+        # Choose the location of goal
+        chosen_place = choice(space_list_to_place_goal)
+        self.map_grid[chosen_place[0]][chosen_place[1]] = self.goal_symbol
+        self.goal_pos = chosen_place
 
     # TODO: All the information of the map is hidden at the beginning.
     def _reveal_maps_by_walking(self):
