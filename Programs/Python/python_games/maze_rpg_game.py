@@ -13,6 +13,7 @@ from random import randint
 from random import choice
 
 from lib.getch import _Getch
+from lib.clear_screen import clear
 
 from lib.maze_generation import generate_maze_grid, make_maze_grid
 
@@ -188,7 +189,7 @@ class Skills(object):
         self.mp_change = mp_change
         self.sp_change = sp_change
         self.ep_change = ep_change
-        
+        self.is_random = None
         # Random is FALSE by default
         self.is_random_point_change = False
         self.is_random_skill_points = False
@@ -242,7 +243,7 @@ class Items(object):
 
 # TODO: Create the enchantment class.
 class Enchantment(object):
-    def __init__():
+    def __init__(self):
         pass
 
  
@@ -252,6 +253,7 @@ class Map(object):
     # When initialised, Map object puts players and item boxes at the
     # places.
     def __init__(self, width, height):
+        clear()
         self.map_grid = generate_maze_grid(make_maze_grid(width,height))
         self.original_map_grid = deepcopy(self.map_grid)
 
@@ -264,8 +266,6 @@ class Map(object):
 
         self.randomly_place_player(self.player)
 
-        print(self.player.object_pos)
-        print(self.hidden_map_grid)
         self.draw_map()
     
     # It is called every time the cursor is moved.
@@ -273,8 +273,8 @@ class Map(object):
         pos_move = direction[arrow_key_to_directions[str_direction]]
         next_player_pos = (self.player.object_pos[0] + pos_move[0],self.player.object_pos[1] + pos_move[1])
         if self.original_map_grid[next_player_pos[0]][next_player_pos[1]] != "#":
+            clear()
 
-            
             # Initialize map using originally created random map.
             self.map_grid = deepcopy(self.original_map_grid)
 
@@ -286,10 +286,6 @@ class Map(object):
 
             # Draw new map.
             self.draw_map()
-        else:
-            print ("Wall")
-            # Set the next move for the player.
-            #self.player.object_pos = next_player_pos
 
     # Randomly place player
     def randomly_place_player(self,player):
@@ -305,7 +301,7 @@ class Map(object):
         self.player.object_pos = chosen_place
 
     # TODO: All the information of the map is hidden at the beginning.
-    def _reveal_maps_by_walking():
+    def _reveal_maps_by_walking(self):
         pass
 
     # Draw the map on the screen.
@@ -345,7 +341,8 @@ class MainGame():
             else:
                 if character in ["UP_KEY", "DOWN_KEY", "LEFT_KEY", "RIGHT_KEY"]:
                     self.first_map.move_player(character)
-
+        
+        # TODO: Random encounter needed to be implemented.
 
 class Menu(object):
     def __init__(self):
