@@ -3,6 +3,7 @@ import sys
 sys.path.insert(0, 'lib/maze_generation.py')
 sys.path.insert(0, 'lib/getch.py')
 
+from random import random
 # Set the colors of characters in the terminal.
 import os
 os.system("color 0") 
@@ -183,14 +184,14 @@ class MazeObject(object):
 class Skills(object):
 
     # The way to initialise the object is to use the JSON object files.    
-    def __init__(self, json_file = {}):
+    def __init__(self, json_data = {}):
 
         # The spend mp and hp for using skills
         # They are often fixed or random value
-        self.hp_change = hp_change
-        self.mp_change = mp_change
-        self.sp_change = sp_change
-        self.ep_change = ep_change
+        self.hp_change = json_data["hp_change"] if json_data != {} else 100
+        self.mp_change = json_data["mp_change"] if json_data != {} else 100
+        self.sp_change = json_data["sp_change"] if json_data != {} else 100
+        self.ep_change = json_data["ep_change"] if json_data != {} else 100
         self.is_random = None
         
         # Random is FALSE by default
@@ -207,6 +208,7 @@ class Skills(object):
 
         self.random_range = 1.05
 
+        # TODO: Create a part of skills describing upgrade
     # Target can be the persons, or enemies
     def activate_skills(self, target):
         if self.is_random:
@@ -217,6 +219,7 @@ class Skills(object):
 # This is an item class, this includes weapon, shields and potions.
 # Item might also have the skills in some cases.
 
+# Item has a number of effects.
 class Items(object):
     def __init__(self, json_data = {}):
         # The values of changes of the status values
@@ -260,7 +263,7 @@ class Map(object):
         clear()
 
         # Set the map_grid.
-        self.goal_symbol = "\033[91m" + "G" + "\033[0m"
+        self.goal_symbol = "\033[93m" + "G" + "\033[0m"
         self.goal_pos = None
         self.map_grid = generate_maze_grid(make_maze_grid(width,height))
         self.randomly_place_goals()
@@ -279,8 +282,10 @@ class Map(object):
     
     # It is called every time the cursor is moved.
     def move_player(self,str_direction):
+        
         pos_move = direction[arrow_key_to_directions[str_direction]]
         next_player_pos = (self.player.object_pos[0] + pos_move[0],self.player.object_pos[1] + pos_move[1])
+        
         if self.original_map_grid[next_player_pos[0]][next_player_pos[1]] != "#":
             clear()
 
@@ -294,6 +299,11 @@ class Map(object):
             self.player.object_pos = next_player_pos
 
             # Draw new map.
+            self.draw_map()
+        
+        # If there is a collision, then it will simply draw the map
+        else:
+            clear()
             self.draw_map()
 
     # Randomly place player
@@ -353,9 +363,55 @@ class Map(object):
 
 # Create the object to start the game...
 class MainGame():
+    
+    # TODO: The section "Special" will be created...
+    
     def __init__(self):
-        self.first_map = Map(10, 10)
+        self.menu_selection = ["Start", "Load", "Exit"]
+        self.selection_cursor = ">"
+        self.selection_not_made = " "
+        self.start_main_menu()
+        self.random_map = Map(10, 10)
         self.manipulate_map()
+
+    # Check whether it will load the games or not.
+    def start_main_menu(self):
+
+        # Set the position of cursor.
+        cursor_value = 0
+        
+        tmp = deepcopy(self.menu_selection)
+
+        # Make a selection
+        for i in range(len(tmp)):
+            if i == cursor_value:
+                tmp[i] = self.selection_cursor + tmp[i]
+            else:
+                tmp[i] = self.selection_not_made + tmp[i]
+
+        print("\n".join(tmp))
+
+        while True:
+            character = getch()
+            tmp = deepcopy(self.menu_selection)
+            if character == b"n":
+                break
+            else:
+                if character == "UP_KEY":
+                    if cursor_value > 0:
+                        cursor_value -= 1
+                elif character == "DOWN_KEY":
+                    if cursor_value < len(self.menu_selection) - 1:
+                        cursor_value += 1
+            for i in range(len(tmp)):
+                
+                if i == cursor_value:
+                    tmp[i] = self.selection_cursor + tmp[i]
+                
+                else:
+                    tmp[i] = self.selection_not_made + tmp[i]
+            clear()
+            print("\n".join(tmp))
 
     def manipulate_map(self):
         while True:
@@ -364,9 +420,16 @@ class MainGame():
                 break
             else:
                 if character in ["UP_KEY", "DOWN_KEY", "LEFT_KEY", "RIGHT_KEY"]:
-                    self.first_map.move_player(character)
-        
+                    self.random_map.move_player(character)
+                    self.enemy_encounter()
+                    
         # TODO: Random encounter needed to be implemented.
+    
+    # TODO: The encounter percentage must be changed 
+    def enemy_encounter(self):
+        k = random()
+        if 0 < k and k < 0.2:
+            print("Enemy appears.")
 
 class Menu(object):
     def __init__(self):
