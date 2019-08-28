@@ -382,15 +382,16 @@ class MainGame():
         
         tmp = deepcopy(self.menu_selection)
 
-        # Make a selection
+        # Initialize the start menu.
         for i in range(len(tmp)):
             if i == cursor_value:
                 tmp[i] = self.selection_cursor + tmp[i]
             else:
                 tmp[i] = self.selection_not_made + tmp[i]
-
+        clear()
         print("\n".join(tmp))
 
+        # Create the menu in accordance with player's input.
         while True:
             character = getch()
             tmp = deepcopy(self.menu_selection)
