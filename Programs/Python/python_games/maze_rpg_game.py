@@ -241,6 +241,7 @@ class Items(object):
         self.mental_strength_change  = json_data["mental_strength_change"] if json_data != {} else 10
         
         # TODO: Implement luckiness effects
+        # Luckiness effect changes the possibility of dropping items from enemy.
         self.luckiness = json_data["luckiness"] if json_data != {} else 10
         
         self.durablity_change = json_data["durablity_change"] if json_data != {} else 10
@@ -395,6 +396,8 @@ class MainGame():
         while True:
             character = getch()
             tmp = deepcopy(self.menu_selection)
+
+            # Temporary breaking point for testing program
             if character == b"n":
                 break
             else:
