@@ -27,6 +27,10 @@ direction = {"N": (0,-1), "S":(0,1),"E":(1,0), "W":(-1,0)}
 # Set the directions to create...
 arrow_key_to_directions = {"UP_KEY": "N", "DOWN_KEY": "S", "RIGHT_KEY": "E", "LEFT_KEY": "W"}
 
+default_ememy_encounter = 0.2
+min_enemy_encounter = 0.1
+
+
 # TODO: Difficulty will be selected
 
 # TODO: Separate the components and put them into different files
@@ -261,12 +265,32 @@ class Map(object):
     # places.
     def __init__(self, width, height):
         # Clear the screen before drawing map
+        self.width = width
+        self.height = height
+
+        # Set the symbols below this line:
+        self.goal_symbol = "\033[93m" + "G" + "\033[0m"
+        self._initialize_map()
         clear()
 
         # Set the map_grid.
-        self.goal_symbol = "\033[93m" + "G" + "\033[0m"
+
+        self.draw_map()
+    
+    # TODO: The encounter percentage must be changed
+    # Take the luck of the player into account.
+    def enemy_encounter(self, player_luck_value):
+        k = random()
+
+        # TODO: Make the possibility calculation possible...
+        tmp = max(default_ememy_encounter, min_enemy_encounter)
+
+        if 0 < k and k < tmp:
+            print("Enemy appears.")
+
+    def _initialize_map(self):
         self.goal_pos = None
-        self.map_grid = generate_maze_grid(make_maze_grid(width,height))
+        self.map_grid = generate_maze_grid(make_maze_grid(self.width,self.height))
         self.randomly_place_goals()
         self.original_map_grid = deepcopy(self.map_grid)
         self.hidden_map_grid = [["." for _ in range(len(self.map_grid))] for _ in range(len(self.map_grid[0]))]
@@ -279,43 +303,44 @@ class Map(object):
         # Randomly place goal
         self.randomly_place_object(self.player)
 
-        self.draw_map()
-    
+    def _move_player_sub(self,str_direction, next_player_pos):
+        # Initialize map using originally created random map.
+        self.map_grid = deepcopy(self.original_map_grid)
+
+        # Place player on the map based on the move player made.
+        self.map_grid[next_player_pos[0]][next_player_pos[1]] = self.player.displayed_character
+
+        # Update player position.
+        self.player.object_pos = next_player_pos
+
     # It is called every time the cursor is moved.
     def move_player(self,str_direction):
         
         pos_move = direction[arrow_key_to_directions[str_direction]]
         next_player_pos = (self.player.object_pos[0] + pos_move[0],self.player.object_pos[1] + pos_move[1])
         
-        # If there is a collision, then it will simply draw the map
-        if self.original_map_grid[next_player_pos[0]][next_player_pos[1]] == "\033[93m" + "G" + "\033[0m":
+        # If there is a collision, then it will simply draw the map.
+        if self.original_map_grid[next_player_pos[0]][next_player_pos[1]] == self.goal_symbol:
            
             clear()
-            print("Success")
+            self._initialize_map()
+            self.enemy_encounter(self.player.luckiness)
             self.draw_map()
 
         elif self.original_map_grid[next_player_pos[0]][next_player_pos[1]] != "#":
             clear()
 
-            # Initialize map using originally created random map.
-            self.map_grid = deepcopy(self.original_map_grid)
-
-            # Place player on the map based on the move player made.
-            self.map_grid[next_player_pos[0]][next_player_pos[1]] = self.player.displayed_character
-
-            # Update player position.
-            self.player.object_pos = next_player_pos
-
+            self._move_player_sub(str_direction, next_player_pos)
             # Draw new map.
             self.draw_map()
-            print(self.original_map_grid[next_player_pos[0]][next_player_pos[1]])
+            
         
 
         else:
             clear()
+            self.enemy_encounter(self.player.luckiness)
             self.draw_map()
-            print(self.original_map_grid[next_player_pos[0]][next_player_pos[1]])
-            print(self.original_map_grid[next_player_pos[0]][next_player_pos[1]] == "G")
+            
 
 
     # Randomly place player
@@ -418,6 +443,7 @@ class MainGame():
                 elif character == "DOWN_KEY":
                     if cursor_value < len(self.menu_selection) - 1:
                         cursor_value += 1
+
             for i in range(len(tmp)):
                 
                 if i == cursor_value:
@@ -436,15 +462,8 @@ class MainGame():
             else:
                 if character in ["UP_KEY", "DOWN_KEY", "LEFT_KEY", "RIGHT_KEY"]:
                     self.random_map.move_player(character)
-                    self.enemy_encounter()
-                    
-        # TODO: Random encounter needed to be implemented.
+
     
-    # TODO: The encounter percentage must be changed 
-    def enemy_encounter(self):
-        k = random()
-        if 0 < k and k < 0.2:
-            print("Enemy appears.")
 
 class Menu(object):
     def __init__(self):
