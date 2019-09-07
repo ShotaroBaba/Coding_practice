@@ -257,6 +257,11 @@ class Enchantment(object):
     def __init__(self):
         pass
 
+
+
+            
+        
+
  
 # The map for players to walk at the beginning
 class Map(object):
@@ -277,6 +282,28 @@ class Map(object):
 
         self.draw_map()
     
+    # Turn-based fight is now imminent
+    def enemy_fight(self, player, level = 1):
+            
+        # TODO: Adding the fights between enemy and player
+            
+        # Clear the screen before the fight begins
+        clear()
+
+            # Just a test screen for the development
+        character = getch()
+
+        # Temporary breaking point for testing program
+        while True:
+
+            character = getch()
+            print("This is only the test fight.")
+            print("The material will be added later on...")
+            
+            if character == b"n":
+                clear()
+                break
+
     # TODO: The encounter percentage must be changed
     # Take the luck of the player into account.
     def enemy_encounter(self, player_luck_value):
@@ -286,12 +313,12 @@ class Map(object):
         tmp = max(default_ememy_encounter, min_enemy_encounter)
 
         if 0 < k and k < tmp:
-            print("Enemy appears.")
+            self.enemy_fight(self, self.player)
 
     def _initialize_map(self):
         self.goal_pos = None
         self.map_grid = generate_maze_grid(make_maze_grid(self.width,self.height))
-        self.randomly_place_goals()
+        self.randomly_place_objects()
         self.original_map_grid = deepcopy(self.map_grid)
         self.hidden_map_grid = [["." for _ in range(len(self.map_grid))] for _ in range(len(self.map_grid[0]))]
 
@@ -323,22 +350,26 @@ class Map(object):
         if self.original_map_grid[next_player_pos[0]][next_player_pos[1]] == self.goal_symbol:
            
             clear()
-            self._initialize_map()
+
+            # Enemy appears before reaches a goal.
             self.enemy_encounter(self.player.luckiness)
+
+            # TODO: Allow player to select yes or no to proceed to the next level.
+            self._initialize_map()
+
             self.draw_map()
 
         elif self.original_map_grid[next_player_pos[0]][next_player_pos[1]] != "#":
             clear()
 
             self._move_player_sub(str_direction, next_player_pos)
-            # Draw new map.
-            self.draw_map()
             
-        
+            # Draw new map.
+            self.enemy_encounter(self.player.luckiness)
+            self.draw_map()
 
         else:
             clear()
-            self.enemy_encounter(self.player.luckiness)
             self.draw_map()
             
 
@@ -356,7 +387,7 @@ class Map(object):
         self.map_grid[chosen_place[0]][chosen_place[1]] = self.player.displayed_character
         self.player.object_pos = chosen_place
 
-    def randomly_place_goals(self):
+    def randomly_place_objects(self):
         
         # Only one goal can be created
         # Choose the place for a goal

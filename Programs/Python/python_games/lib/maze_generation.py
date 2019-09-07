@@ -85,7 +85,7 @@ def generate_maze_grid(grid):
                     tmp.append("#")
                 else:
                     # if N --> S, then the wall is removed.
-                    if "N" in grid[y//2 -1][x//2]and "S" in grid[y//2][x//2]:
+                    if "N" in grid[y//2 -1][x//2] and "S" in grid[y//2][x//2]:
                         tmp.append(" ")
                     # if not, the wall is retained.
                     else:
@@ -97,6 +97,7 @@ def generate_maze_grid(grid):
     
     return maze_list
 
+# Main function for the test purpose...
 def main():
 
     print("Test maze generation (1)")
