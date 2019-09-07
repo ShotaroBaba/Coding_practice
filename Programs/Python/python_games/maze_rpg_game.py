@@ -287,7 +287,14 @@ class Map(object):
         pos_move = direction[arrow_key_to_directions[str_direction]]
         next_player_pos = (self.player.object_pos[0] + pos_move[0],self.player.object_pos[1] + pos_move[1])
         
-        if self.original_map_grid[next_player_pos[0]][next_player_pos[1]] != "#":
+        # If there is a collision, then it will simply draw the map
+        if self.original_map_grid[next_player_pos[0]][next_player_pos[1]] == "\033[93m" + "G" + "\033[0m":
+           
+            clear()
+            print("Success")
+            self.draw_map()
+
+        elif self.original_map_grid[next_player_pos[0]][next_player_pos[1]] != "#":
             clear()
 
             # Initialize map using originally created random map.
@@ -301,11 +308,15 @@ class Map(object):
 
             # Draw new map.
             self.draw_map()
+            print(self.original_map_grid[next_player_pos[0]][next_player_pos[1]])
         
-        # If there is a collision, then it will simply draw the map
+
         else:
             clear()
             self.draw_map()
+            print(self.original_map_grid[next_player_pos[0]][next_player_pos[1]])
+            print(self.original_map_grid[next_player_pos[0]][next_player_pos[1]] == "G")
+
 
     # Randomly place player
     def randomly_place_object(self,player):
