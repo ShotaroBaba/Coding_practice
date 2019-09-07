@@ -1,5 +1,6 @@
 *.gv
 *.pdf
+*.pyc
 collatz_tree.png
 collatz_tree
 finder.png
