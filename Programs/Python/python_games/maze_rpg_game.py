@@ -276,34 +276,55 @@ class Map(object):
         self.treasure_symbol = "\033[36m" + "T" + "\033[0m"
         self._initialize_map()
         clear()
+        
+        """
+        0: On Map
+        1: Encountering Enemy
+        Others: Reserved
+        """
 
-        # Set the map_grid.
+        self.current_state = 0
 
         self.draw_map()
+    
+        self.manipulate_map()
+
+    
+    def manipulate_map(self):
+        while True:
+            character = getch()
+            
+            # This condition will be removed later.
+            if character == b"n":
+                break
+            else:
+                if character in ["UP_KEY", "DOWN_KEY", "LEFT_KEY", "RIGHT_KEY"]:
+                    self.move_player(character)
+
     
     # TODO: Create the generation algorithms for the robots.
     def random_emeny_generation(self):
         pass
     
     # Turn-based fight is now imminent
+    # TODO: Enable the random appearance of the enemy based on the depth of the level.
     def enemy_fight(self, player, level = 1):
-            
+        clear() 
         # TODO: Adding the fights between enemy and player
             
         # Clear the screen before the fight begins
-        clear()
+        print("This is only the test fight.")
+        print("The material will be added later on...")
 
-        # Just a test screen for the development
-        character = getch()
 
         # Temporary breaking point for testing program
         while True:
+            clear()
 
-            # TODO: Create the fight screen between enemy's
-            character = getch()
             print("This is only the test fight.")
             print("The material will be added later on...")
-            
+            # TODO: Create the fight screen between enemy's
+            character = getch()
             if character == b"n":
                 clear()
                 break
@@ -329,6 +350,8 @@ class Map(object):
             self.randomly_place_objects(self.treasure_symbol)
         
         self.original_map_grid = deepcopy(self.map_grid)
+
+        # TODO: Create and show the hidden map grid.
         self.hidden_map_grid = [["." for _ in range(len(self.map_grid))] for _ in range(len(self.map_grid[0]))]
 
         self.direction = direction
@@ -373,10 +396,11 @@ class Map(object):
 
             self._move_player_sub(str_direction, next_player_pos)
             
-            # Draw new map.
+            # Draw the enemy encouter screen.
             self.enemy_encounter(self.player.luckiness)
-            self.draw_map()
 
+            self.draw_map()
+            
         else:
             clear()
             self.draw_map()
@@ -452,8 +476,9 @@ class MainGame():
         self.selection_cursor = ">"
         self.selection_not_made = " "
         self.start_main_menu()
+
+        # Create 10x10 maps after creating maps.
         self.random_map = Map(10, 10)
-        self.manipulate_map()
 
     # Check whether it will load the games or not.
     def start_main_menu(self):
@@ -476,10 +501,14 @@ class MainGame():
         while True:
             character = getch()
             tmp = deepcopy(self.menu_selection)
-
+            print("\n".join(tmp))
             # Temporary breaking point for testing program
-            if character == b"n":
+            if character == b"\r" and cursor_value == 0:
                 break
+
+            elif character == b"\r" and cursor_value == 1:
+                break
+
             else:
                 if character == "UP_KEY":
                     if cursor_value > 0:
@@ -496,16 +525,8 @@ class MainGame():
                 else:
                     tmp[i] = self.selection_not_made + tmp[i]
             clear()
-            print("\n".join(tmp))
+            
 
-    def manipulate_map(self):
-        while True:
-            character = getch()
-            if character == b"n":
-                break
-            else:
-                if character in ["UP_KEY", "DOWN_KEY", "LEFT_KEY", "RIGHT_KEY"]:
-                    self.random_map.move_player(character)
 
     
 
@@ -520,7 +541,7 @@ class Menu(object):
 # TODO: Putting codes that allows player to move in the main program.
 # Create first main game here.
 def main():
-    main_game = MainGame()
+    MainGame()
 
 if __name__ == '__main__':
     main()
