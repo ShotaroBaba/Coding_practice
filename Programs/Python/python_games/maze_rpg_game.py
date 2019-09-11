@@ -255,15 +255,13 @@ class Items(object):
 # TODO: Create the enchantment class.
 class Enchantment(object):
     def __init__(self):
-        pass
+        pass    
 
 
-
-            
-        
 
  
 # The map for players to walk at the beginning
+# TODO: Change Map name to a proper name
 class Map(object):
 
     # When initialised, Map object puts players and item boxes at the
@@ -275,12 +273,17 @@ class Map(object):
 
         # Set the symbols below this line:
         self.goal_symbol = "\033[93m" + "G" + "\033[0m"
+        self.treasure_symbol = "\033[36m" + "T" + "\033[0m"
         self._initialize_map()
         clear()
 
         # Set the map_grid.
 
         self.draw_map()
+    
+    # TODO: Create the generation algorithms for the robots.
+    def random_emeny_generation(self):
+        pass
     
     # Turn-based fight is now imminent
     def enemy_fight(self, player, level = 1):
@@ -290,12 +293,13 @@ class Map(object):
         # Clear the screen before the fight begins
         clear()
 
-            # Just a test screen for the development
+        # Just a test screen for the development
         character = getch()
 
         # Temporary breaking point for testing program
         while True:
 
+            # TODO: Create the fight screen between enemy's
             character = getch()
             print("This is only the test fight.")
             print("The material will be added later on...")
@@ -316,9 +320,14 @@ class Map(object):
             self.enemy_fight(self, self.player)
 
     def _initialize_map(self):
-        self.goal_pos = None
         self.map_grid = generate_maze_grid(make_maze_grid(self.width,self.height))
-        self.randomly_place_objects()
+
+        # Randomly place objects, including goals and treasure boxes.
+        self.randomly_place_objects(self.goal_symbol)
+        
+        for _ in range(randint(0,10)):
+            self.randomly_place_objects(self.treasure_symbol)
+        
         self.original_map_grid = deepcopy(self.map_grid)
         self.hidden_map_grid = [["." for _ in range(len(self.map_grid))] for _ in range(len(self.map_grid[0]))]
 
@@ -328,7 +337,7 @@ class Map(object):
         self.player = MazeObject()
 
         # Randomly place goal
-        self.randomly_place_object(self.player)
+        self.randomly_place_player(self.player)
 
     def _move_player_sub(self,str_direction, next_player_pos):
         # Initialize map using originally created random map.
@@ -375,7 +384,7 @@ class Map(object):
 
 
     # Randomly place player
-    def randomly_place_object(self,player):
+    def randomly_place_player(self,player):
         space_list_to_place_player = []
         for y in range(len(self.map_grid[0])):
             for x in range(len(self.map_grid)):
@@ -387,7 +396,7 @@ class Map(object):
         self.map_grid[chosen_place[0]][chosen_place[1]] = self.player.displayed_character
         self.player.object_pos = chosen_place
 
-    def randomly_place_objects(self):
+    def randomly_place_objects(self, symbol_to_use):
         
         # Only one goal can be created
         # Choose the place for a goal
@@ -399,8 +408,7 @@ class Map(object):
         
         # Choose the location of goal
         chosen_place = choice(space_list_to_place_goal)
-        self.map_grid[chosen_place[0]][chosen_place[1]] = self.goal_symbol
-        self.goal_pos = chosen_place
+        self.map_grid[chosen_place[0]][chosen_place[1]] = symbol_to_use
 
     # TODO: All the information of the map is hidden at the beginning.
     def _reveal_maps_by_walking(self):
@@ -435,6 +443,11 @@ class MainGame():
     # TODO: The section "Special" will be created...
     
     def __init__(self):
+        
+        # Start: Start the game from the beginning
+        # Load: Load all game status
+        # Exit: Leave game to desktop
+
         self.menu_selection = ["Start", "Load", "Exit"]
         self.selection_cursor = ">"
         self.selection_not_made = " "
