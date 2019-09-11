@@ -1,9 +1,11 @@
 
+# Reading all necessary packages
 import sys
 sys.path.insert(0, 'lib/maze_generation.py')
 sys.path.insert(0, 'lib/getch.py')
 
 from random import random
+
 # Set the colors of characters in the terminal.
 import os
 os.system("color 0") 
@@ -47,24 +49,30 @@ def load_data():
 def save_data():
     pass
 
+# Used for developing the software
+def return_json_value_data(key_value, default_value, json_data, level  = 1, is_random = "no"):
+    return json_data[key_value] \
+        if json_data != {} else json_data[key_value] * default_value * random.uniform(level-1, level) \
+            if is_random == "yes" and json_data != {} else default_value
+
 # Used for a player, an enemy and a non-player character class
 # TODO: Find the class name that is suitable for explanation
 class MazeObject(object):
-
+    
     # Read the json object to initalise the data, 
-    def __init__(self, json_data = {}):
+    def __init__(self, json_data = {}, level = 1, is_random = "no"):
         
         # The enemy and player level, which is an important value.
-        self.level = 1 
+        self.level = json_data["level"] if json_data != {} else 1
 
         # hp: Hit point
         # mp: Magic point
         # sp: Stamina point
         # ep: Energy point
-        self.hp = json_data["hp"] if json_data != {} else 100
-        self.mp = json_data["mp"] if json_data != {} else 100
-        self.sp = json_data["sp"] if json_data != {} else 100
-        self.ep = json_data["ep"] if json_data != {} else 100
+        self.hp = return_json_value_data("hp", 100, json_data, level, is_random)
+        self.mp = return_json_value_data("mp", 100, json_data, level, is_random)
+        self.sp = return_json_value_data("sp", 100, json_data, level, is_random)
+        self.ep = return_json_value_data("ep", 100, json_data, level, is_random)
 
         # Object's parameters
         self.strength = json_data["strength"] if json_data != {} else 10
@@ -255,10 +263,7 @@ class Items(object):
 # TODO: Create the enchantment class.
 class Enchantment(object):
     def __init__(self):
-        pass    
-
-
-
+        pass   
  
 # The map for players to walk at the beginning
 # TODO: Change Map name to a proper name
@@ -270,20 +275,14 @@ class Map(object):
         # Clear the screen before drawing map
         self.width = width
         self.height = height
+        self.level = 1
 
         # Set the symbols below this line:
         self.goal_symbol = "\033[93m" + "G" + "\033[0m"
         self.treasure_symbol = "\033[36m" + "T" + "\033[0m"
+        self.treasure_taken_symbol = None
         self._initialize_map()
         clear()
-        
-        """
-        0: On Map
-        1: Encountering Enemy
-        Others: Reserved
-        """
-
-        self.current_state = 0
 
         self.draw_map()
     
@@ -302,16 +301,16 @@ class Map(object):
                     self.move_player(character)
 
     
-    # TODO: Create the generation algorithms for the robots.
-    def random_emeny_generation(self):
-        pass
+
     
     # Turn-based fight is now imminent
     # TODO: Enable the random appearance of the enemy based on the depth of the level.
     def enemy_fight(self, player, level = 1):
         clear() 
         # TODO: Adding the fights between enemy and player
-            
+
+        # TODO: Create the alogirhtms that generates the
+        enemy = MazeObject(level = level, is_random="yes")
         # Clear the screen before the fight begins
         print("This is only the test fight.")
         print("The material will be added later on...")
@@ -355,7 +354,7 @@ class Map(object):
         self.hidden_map_grid = [["." for _ in range(len(self.map_grid))] for _ in range(len(self.map_grid[0]))]
 
         self.direction = direction
-
+        
         # Test purpose for putting player.
         self.player = MazeObject()
 
@@ -449,7 +448,6 @@ class Map(object):
                 else:
                     tmp_str += self.map_grid[x][y]
             tmp_str += "\n"
-        # print(self.map_grid)
         
         # Print map
         print(tmp_str)
@@ -482,26 +480,25 @@ class MainGame():
 
     # Check whether it will load the games or not.
     def start_main_menu(self):
-
+        clear()
         # Set the position of cursor.
         cursor_value = 0
         
+        # Deep copy the selection values
         tmp = deepcopy(self.menu_selection)
-
         # Initialize the start menu.
         for i in range(len(tmp)):
             if i == cursor_value:
                 tmp[i] = self.selection_cursor + tmp[i]
             else:
                 tmp[i] = self.selection_not_made + tmp[i]
-        clear()
-        print("\n".join(tmp))
 
         # Create the menu in accordance with player's input.
         while True:
-            character = getch()
-            tmp = deepcopy(self.menu_selection)
             print("\n".join(tmp))
+            character = getch()
+
+            tmp = deepcopy(self.menu_selection)
             # Temporary breaking point for testing program
             if character == b"\r" and cursor_value == 0:
                 break
@@ -524,6 +521,8 @@ class MainGame():
                 
                 else:
                     tmp[i] = self.selection_not_made + tmp[i]
+            
+            
             clear()
             
 
