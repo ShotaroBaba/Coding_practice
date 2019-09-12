@@ -20,6 +20,8 @@ from lib.clear_screen import clear
 
 from lib.maze_generation import generate_maze_grid, make_maze_grid
 
+# TODO: Create at least one creature.
+enemy_json_list = []
 
 getch = _Getch()
 
@@ -49,16 +51,19 @@ def load_data():
 def save_data():
     pass
 
-# Used for developing the software
+# Used for returning a certain value for a certain situation.
 def return_json_value_data(key_value, default_value, json_data, level  = 1, is_random = "no"):
     return json_data[key_value] \
         if json_data != {} else json_data[key_value] * default_value * random.uniform(level-1, level) \
             if is_random == "yes" and json_data != {} else default_value
 
+
 # Used for a player, an enemy and a non-player character class
 # TODO: Find the class name that is suitable for explanation
+
 class MazeObject(object):
     
+
     # Read the json object to initalise the data, 
     def __init__(self, json_data = {}, level = 1, is_random = "no"):
         
@@ -75,68 +80,93 @@ class MazeObject(object):
         self.ep = return_json_value_data("ep", 100, json_data, level, is_random)
 
         # Object's parameters
-        self.strength = json_data["strength"] if json_data != {} else 10
-        self.agility = json_data["agility"] if json_data != {} else 10
-        self.vitality = json_data["vitality"] if json_data != {} else 10
-        self.dexterity = json_data["dexterity"] if json_data != {} else 10
+        self.strength = return_json_value_data("strength", 10, json_data, level, is_random)
+        self.agility = return_json_value_data("agility", 10, json_data, level, is_random)
+        self.vitality = return_json_value_data("vitality", 10, json_data, level, is_random)
+        self.dexterity = return_json_value_data("dexterity", 10, json_data, level, is_random)
 
-        self.smartness = json_data["smartness"] if json_data != {} else 10
-        self.magic_power = json_data["magic_power"] if json_data != {} else 10
-        self.mental_strength = json_data["mental_strength"] if json_data != {} else 10
+        self.smartness = return_json_value_data("smartness", 10, json_data, level, is_random)
+        self.magic_power = return_json_value_data("magic_power", 10, json_data, level, is_random)
+        self.mental_strength = return_json_value_data("mental_strength", 10, json_data, level, is_random)
 
         # TODO: Implement luckiness effects
-        self.luckiness = json_data["luckiness"] if json_data != {} else 10
+        self.luckiness = return_json_value_data("luckiness", 10, json_data, level, is_random)
 
         # Check whether it is a player, an enemy or just an object
-        self.player_name = json_data["player_name"] if json_data != {} else "None"
-        self.is_living = json_data["is_living"] if json_data != {} else True
-        self.is_player = json_data["is_player"] if json_data != {} else True
-        self.is_enemy = json_data["is_enemy"] if json_data != {} else  False
+        self.player_name = json_data["player_name"]\
+            if json_data != {} and "player_name" in json_data.keys() else "None"
+        self.is_living = json_data["is_living"]\
+            if json_data != {} and "is_living" in json_data.keys( )else True
+        self.is_player = json_data["is_player"]\
+            if json_data != {} and "is_player" in json_data.keys() else True
+        self.is_enemy = json_data["is_enemy"]\
+            if json_data != {} and "is_enemy" in json_data.keys() else  False
 
         # Show the objects that player wields.
-        self.right_arm = json_data["right_arm"] if json_data != {} else "Empty"
-        self.left_arm = json_data["left_arm"] if json_data != {} else "Empty"
+        self.right_arm = json_data["right_arm"]\
+            if json_data != {} and "right_arm" in json_data.keys() else "Empty"
+        self.left_arm = json_data["left_arm"] if\
+            json_data != {} and "left_arm" in json_data.keys() else "Empty"
 
-        self.head = json_data["head"] if json_data != {} else "Empty"
-        self.arm =  json_data["arm"] if json_data != {} else "Empty"
-        self.leg = json_data["leg"] if json_data != {} else "Empty"
-        self.wrist = json_data["wrist"] if json_data != {} else "Empty"
+        self.head = json_data["head"]\
+            if json_data != {} and "is_enemy" in json_data.keys() else "Empty"
+        self.arm =  json_data["arm"]\
+            if json_data != {} and "arm" in json_data.keys() else "Empty"
+        self.leg = json_data["leg"]\
+            if json_data != {} and "leg" in json_data.keys() else "Empty"
+        self.wrist = json_data["wrist"]\
+            if json_data != {} and "wrist" in json_data.keys() else "Empty"
 
-        self.right_finger = json_data["right_finger"] if json_data != {} else "Empty"
-        self.left_finger = json_data["left_finger"] if json_data != {} else "Empty"
+        self.right_finger = json_data["right_finger"]\
+            if json_data != {} and "right_finger" in json_data.keys() else "Empty"
+        self.left_finger = json_data["left_finger"]\
+            if json_data != {} and "left_finger" in json_data.keys() else "Empty"
 
         # Initialise paramteres based on player's equipment.
         self._init_parameters_equipment()
 
         # Status is normal by default
         # if the status is normal, then the player is not affected.
-        self.status = json_data["status"] if json_data != {} else "Normal"
+        self.status = json_data["status"]\
+            if json_data != {} and "status" in json_data.keys() else "Normal"
 
         # By default, the Objects's position is unknown.
         # It is only applied to the player.
-        self.object_pos = json_data["object_pos"] if json_data != {} else None
+        self.object_pos = json_data["object_pos"]\
+            if json_data != {} and "object_pos" in json_data.keys() else None
 
         # Check how the character is displayed.
-        self.displayed_character = json_data["displayed_character"] if json_data != {} else "@"
+        self.displayed_character = json_data["displayed_character"]\
+            if json_data != {} and "displayed_character" in json_data.keys() else "@"
 
         # The maximum number of items that Objects can hold
         # It can be increased by the level up.
-        self.max_item_hold = json_data["max_item_hold"] if json_data != {} else 10
+        self.max_item_hold = json_data["max_item_hold"]\
+            if json_data != {} and "max_item_hold" in json_data.keys() else 10
 
         # Objects's current hit point
-        self.exp = json_data["exp"] if json_data != {} else 0
+        self.exp = json_data["exp"]\
+            if json_data != {} and "exp" in json_data.keys() else 0
 
         # Objects's necessary experience points.
-        self.next_exp = json_data["next_exp"] if json_data != {} else 100
+        self.next_exp = json_data["next_exp"]\
+            if json_data != {} and "next_exp" in json_data.keys() else 100
 
         # Item numbers is recorded in the dictionary type
-        self.items = json_data["items"] if json_data != {} else {}
+        self.items = json_data["items"]\
+            if json_data != {} and "items" in json_data.keys() else {}
 
         # TODO Create the skill classes for users
-        self.skills = json_data["skills"] if json_data != {} else {}
+        self.skills = json_data["skills"]\
+            if json_data != {} and "skills" in json_data.keys() else {}
 
         # Rank that can be used for adjusting the random encounter in dungeon.
-        self.rank = json_data["rank"] if json_data != {} else {}
+        self.rank = json_data["rank"]\
+            if json_data != {} and "rank" in json_data.keys() else {}
+
+
+        # Initial skill for attacking the enemy.
+        self.basic_attack = lambda x: 10 * self.strength * random.uniform(0.8, 1.0)
 
     # Apply skills to a certain person, enemy or items
     def use_skills(self, skill_name, target):
