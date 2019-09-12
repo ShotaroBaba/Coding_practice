@@ -300,16 +300,14 @@ class Map(object):
                 if character in ["UP_KEY", "DOWN_KEY", "LEFT_KEY", "RIGHT_KEY"]:
                     self.move_player(character)
 
-    
 
-    
     # Turn-based fight is now imminent
     # TODO: Enable the random appearance of the enemy based on the depth of the level.
     def enemy_fight(self, player, level = 1):
         clear() 
         # TODO: Adding the fights between enemy and player
 
-        # TODO: Create the alogirhtms that generates the
+        # TODO: Create the alogirhtms that generates the enemy
         enemy = MazeObject(level = level, is_random="yes")
         # Clear the screen before the fight begins
         print("This is only the test fight.")
@@ -371,6 +369,59 @@ class Map(object):
         # Update player position.
         self.player.object_pos = next_player_pos
 
+    # Allows the users to select whether they will proceed to the next floor...
+    def _map_proceed_selection(self):
+        clear()
+        
+        selection_list = ["Yes", "No"]
+        cursor_not_selected = " "
+        cursor_selected = ">"
+        tmp_cursor = deepcopy(selection_list)
+        cursor_selection = 1
+        
+        while True:
+            self.draw_map()
+            for i in range(len(tmp_cursor)):
+                if i == cursor_selection:
+                    tmp_cursor[i] = cursor_selected + tmp_cursor[i]
+                else:
+                    tmp_cursor[i] = cursor_not_selected + tmp_cursor[i]
+
+            print("Will you proceed to the next level?")
+            print("".join(tmp_cursor))
+
+            tmp_cursor = deepcopy(selection_list)
+            tmp = getch()
+            if tmp == "LEFT_KEY":
+                if cursor_selection > 0:
+                        cursor_selection -= 1
+                
+            elif tmp == "RIGHT_KEY":
+                if cursor_selection < len(tmp_cursor) - 1:
+                        cursor_selection += 1
+
+            elif tmp == b"\r":
+                # Yes case --> Initialise map.
+                if cursor_selection == 0:
+                    # TODO: Allow player to select yes or no to proceed to the next level.
+                    self._initialize_map()
+                    break
+                
+                # No case --> Do nothing.
+                if cursor_selection == 1:
+                    break
+            clear()
+
+
+    def display_status(self):
+        print("HP: {}, MP: {}, SP: {}, EP: {}".format(self.player.hp, self.player.mp, self.player.sp, self.player.ep))
+        
+    
+
+    def player_menu(self):
+        print("")
+        pass
+
     # It is called every time the cursor is moved.
     def move_player(self,str_direction):
         
@@ -385,9 +436,12 @@ class Map(object):
             # Enemy appears before reaches a goal.
             self.enemy_encounter(self.player.luckiness)
 
-            # TODO: Allow player to select yes or no to proceed to the next level.
-            self._initialize_map()
 
+            self._move_player_sub(str_direction, next_player_pos)
+            # TODO: Allow player to select yes or no to proceed to the next level.
+            self._map_proceed_selection()
+
+            clear()
             self.draw_map()
 
         elif self.original_map_grid[next_player_pos[0]][next_player_pos[1]] != "#":
@@ -451,7 +505,8 @@ class Map(object):
         
         # Print map
         print(tmp_str)
-
+        self.display_status()
+        
     # Saves the data of the maps into json file.
     def save_map_data(self):
         pass
@@ -502,7 +557,8 @@ class MainGame():
             # Temporary breaking point for testing program
             if character == b"\r" and cursor_value == 0:
                 break
-
+            
+            # TODO: Allows to load the data.
             elif character == b"\r" and cursor_value == 1:
                 break
 
