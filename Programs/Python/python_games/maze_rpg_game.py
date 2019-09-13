@@ -164,6 +164,9 @@ class MazeObject(object):
         self.rank = json_data["rank"]\
             if json_data != {} and "rank" in json_data.keys() else {}
 
+        # The monster will drop the item
+        self.rank = json_data["drop_item"]\
+            if json_data != {} and "drop_item" in json_data.keys() else {}
 
         # Initial skill for attacking the enemy.
         self.basic_attack = lambda x: 10 * self.strength * random.uniform(0.8, 1.0)
