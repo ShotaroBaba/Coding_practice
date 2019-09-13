@@ -17,6 +17,8 @@ from lib.maze_generation import generate_maze_grid, make_maze_grid
 from random import random
 from lib.default_values import *
 
+constant_next_level_exp = 1.4
+
 # Load creatures.
 creature_file_path = os.path.join(data_dir,monster_data_file_name)
 enemy_json = json.loads(open(creature_file_path, "r").read())
@@ -39,6 +41,8 @@ arrow_key_to_directions = {"UP_KEY": "N", "DOWN_KEY": "S", "RIGHT_KEY": "E", "LE
 default_ememy_encounter = 0.2
 min_enemy_encounter = 0.1
 
+numerical_player_strengh = ["hp", "mp", "sp", "ep"]
+non_numerical_player_strength = ["strength", "agility", "vitality", "dexterity", "smartness", "magic_power", "mental_strength"]   
 
 # TODO: Difficulty will be selected
 
@@ -57,17 +61,27 @@ def save_data():
     pass
 
 # Used for returning a certain value for a certain situation.
+# The enemy strength is decided randomly.
 def return_json_value_data(key_value, default_value, json_data, level  = 1, is_random = "no"):
-    return json_data[key_value] \
-        if json_data != {} else json_data[key_value] * default_value * random.uniform(level-1, level) \
-            if is_random == "yes" and json_data != {} else default_value
+    if json_data != {}:
+        if is_random == "yes":
+            return round(json_data[key_value] * uniform(level-0.2, level + 0.2), 0)
+        else:
+            return json_data[key_value]
+    else:
+        return default_value
+
+    # return json_data[key_value] \
+    #     if json_data != {} else json_data[key_value] * default_value * random.uniform(level-1, level) \
+    #         if is_random == "yes" and json_data != {} else default_value
 
 
 # Used for a player, an enemy and a non-player character class
 # TODO: Find the class name that is suitable for explanation
 
+
+
 class MazeObject(object):
-    
 
     # Read the json object to initalise the data, 
     def __init__(self, json_data = {}, level = 1, is_random = "no"):
@@ -76,6 +90,8 @@ class MazeObject(object):
         self.level = json_data["level"] if json_data != {} else 1
 
         self.bonus_point = json_data["bonus"] if json_data !={} and "bonus" in json_data.keys() else 0
+        
+        #Note: maximum points available
         # hp: Hit point
         # mp: Magic point
         # sp: Stamina point
@@ -84,6 +100,12 @@ class MazeObject(object):
         self.mp = return_json_value_data("mp", 100, json_data, level, is_random)
         self.sp = return_json_value_data("sp", 100, json_data, level, is_random)
         self.ep = return_json_value_data("ep", 100, json_data, level, is_random)
+
+        self.current_hp = None
+        self.current_mp = None
+        self.current_sp = None
+        self.current_ep = None
+
 
         # Object's parameters
         self.strength = return_json_value_data("strength", 10, json_data, level, is_random)
@@ -150,13 +172,22 @@ class MazeObject(object):
         self.max_item_hold = json_data["max_item_hold"]\
             if json_data != {} and "max_item_hold" in json_data.keys() else 10
 
-        # Objects's current hit point
-        self.exp = json_data["exp"]\
+        # Objects's experience point when gaining the points
+        self.exp = int(round(json_data["exp"] * uniform(level-0.2, level+0.2),0))\
             if json_data != {} and "exp" in json_data.keys() else 0
+
+        # Object's current expereince points if available
+        # This is only for the player...
+        self.current_exp = json_data["current_exp"]\
+            if json_data != {} and "current_exp" in json_data.keys() else 0
+
+        # This is only for the player...
+        self.bonus_point = json_data["bonus_point"]\
+            if json_data != {} and "bonus_point" in json_data.keys() else 0
 
         # Objects's necessary experience points.
         self.next_exp = json_data["next_exp"]\
-            if json_data != {} and "next_exp" in json_data.keys() else 100
+            if json_data != {} and "next_exp" in json_data.keys() else 50
 
         # Item numbers is recorded in the dictionary type
         self.items = json_data["items"]\
@@ -223,9 +254,37 @@ class MazeObject(object):
     
     def move_object_right(self, key_event):
         pass
+    
+    # The system of the calculation of the level
+    def get_experience(self, exp_values):
+        self.current_exp += exp_values
 
+        self.next_exp -= exp_values
 
+        while self.next_exp < 1:
+            
+            remain = self.next_exp
+            self.bonus_point += 5 + self.level // 5
+            self.level += 1
+            print("Player level up!")
+            print("You gained {} bonus points.".format(self.bonus_point))
+            print("Player reached to level {}".format(self.level))
+            
+            for _ in range(3 + (self.level // 10)):
+                tmp_choice = choice(numerical_player_strengh + non_numerical_player_strength)
+                # Randomly allocate the values once the level is up
+                if tmp_choice in numerical_player_strengh:
+                    exec("""self.{} += 5""".format(tmp_choice))
+                    print("The {} value increases by 5!".format(tmp_choice))
+                else:
+                    exec("""self.{} += 1""".format(tmp_choice))
+                    print("The {} value increases by 1!".format(tmp_choice))
 
+                
+            # The formula for calculating the next level.
+            self.next_exp = 50 + int(round(50 * (0.5 * (self.level ** (constant_next_level_exp))))) - remain
+
+        
 # This includes passive skills and active skills used by player, enemy and objects.
 # This can be anything, fighting enemy, saving data and so forth.
 # Load all of the skills.
@@ -345,11 +404,11 @@ class Map(object):
     # TODO: Enable the random appearance of the enemy based on the depth of the level.
     # TODO: Enable to fight several enemies.
 
-    def enemy_fight(self):
+    def _enemy_fight(self):
         
         # TODO: Adding the fights between enemy and player
         # Create selection screen
-        selection_list = ["Fight", "Skills", "Escape"]
+        selection_list = ["Fight", "Skills", "Item", "Escape"]
         cursor_not_selected = " "
         cursor_selected = ">"
         tmp_cursor = deepcopy(selection_list)
@@ -384,13 +443,13 @@ class Map(object):
                 print("You defeated the creature!")
                 print("Player acquire {} exp".format(enemy.exp))
                 print("Press any key to return to map...")
+                self.player.get_experience(enemy.exp)
                 getch()
                 clear()
                 return True
-
             else:
                 print("Player delivers {} damage".format(player_attack_value))
-                print("Player")
+                getch()
                 return False
 
         def enemy_turn_normal_attack():
@@ -408,7 +467,7 @@ class Map(object):
 
             else:
                 print("Enemy delivers {} damage".format(enemy_attack_value))
-                print("Player")
+                getch()
                 return False
 
 
@@ -454,11 +513,8 @@ class Map(object):
                         
                         if player_turn_normal_attack():
                             break
-
-                       
                     
-                    
-                # Go to electronic. 
+                # TODO: Create the function that handles player's skills.
                 if cursor_selection == 1:
                     
                     clear()
@@ -471,6 +527,11 @@ class Map(object):
                     
                     clear()
                     break
+                if cursor_selection == 3:
+
+                    clear()
+                    break
+
             clear()
 
     # TODO: The encounter percentage must be changed
@@ -482,7 +543,7 @@ class Map(object):
         tmp = max(default_ememy_encounter, min_enemy_encounter)
 
         if 0 < k and k < tmp:
-            self.enemy_fight()
+            self._enemy_fight()
 
     def _initialize_map(self):
         self.map_grid = generate_maze_grid(make_maze_grid(self.width,self.height))
