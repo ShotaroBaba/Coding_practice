@@ -4,21 +4,26 @@ import sys
 sys.path.insert(0, 'lib/maze_generation.py')
 sys.path.insert(0, 'lib/getch.py')
 
-from random import random
-
-# Set the colors of characters in the terminal.
 import os
-os.system("color 0") 
+import json 
 from copy import deepcopy
-
 from random import shuffle
 from random import randint
 from random import choice
-
+from random import uniform
 from lib.getch import _Getch
 from lib.clear_screen import clear
-
 from lib.maze_generation import generate_maze_grid, make_maze_grid
+from random import random
+from lib.default_values import *
+
+# Load creatures.
+creature_file_path = os.path.join(data_dir,monster_data_file_name)
+enemy_json = json.loads(open(creature_file_path, "r").read())
+
+
+# Set the colors of characters in the terminal.
+os.system("color 0") 
 
 # TODO: Create at least one creature.
 enemy_json_list = []
@@ -70,6 +75,7 @@ class MazeObject(object):
         # The enemy and player level, which is an important value.
         self.level = json_data["level"] if json_data != {} else 1
 
+        self.bonus_point = json_data["bonus"] if json_data !={} and "bonus" in json_data.keys() else 0
         # hp: Hit point
         # mp: Magic point
         # sp: Stamina point
@@ -96,7 +102,7 @@ class MazeObject(object):
         self.player_name = json_data["player_name"]\
             if json_data != {} and "player_name" in json_data.keys() else "None"
         self.is_living = json_data["is_living"]\
-            if json_data != {} and "is_living" in json_data.keys( )else True
+            if json_data != {} and "is_living" in json_data.keys( ) else True
         self.is_player = json_data["is_player"]\
             if json_data != {} and "is_player" in json_data.keys() else True
         self.is_enemy = json_data["is_enemy"]\
@@ -172,6 +178,7 @@ class MazeObject(object):
         self.basic_attack = lambda x: 10 * self.strength * random.uniform(0.8, 1.0)
 
     # Apply skills to a certain person, enemy or items
+    # NOTE: Skills will be a set of json data.
     def use_skills(self, skill_name, target):
         self.skills[skill_name].activate_skills(target)
         pass
@@ -336,28 +343,135 @@ class Map(object):
 
     # Turn-based fight is now imminent
     # TODO: Enable the random appearance of the enemy based on the depth of the level.
-    def enemy_fight(self, player, level = 1):
-        clear() 
+    # TODO: Enable to fight several enemies.
+
+    def enemy_fight(self):
+        
         # TODO: Adding the fights between enemy and player
+        # Create selection screen
+        selection_list = ["Fight", "Skills", "Escape"]
+        cursor_not_selected = " "
+        cursor_selected = ">"
+        tmp_cursor = deepcopy(selection_list)
+        cursor_selection = 0
 
         # TODO: Create the alogirhtms that generates the enemy
-        enemy = MazeObject(level = level, is_random="yes")
-        # Clear the screen before the fight begins
-        print("This is only the test fight.")
-        print("The material will be added later on...")
-
+        
+        random_enemy = choice(list(enemy_json.keys()))
+        enemy = MazeObject(json_data = enemy_json[random_enemy], level = self.level, is_random="yes")
 
         # Temporary breaking point for testing program
-        while True:
-            clear()
+        # while True:
+        #     clear()
 
-            print("This is only the test fight.")
-            print("The material will be added later on...")
-            # TODO: Create the fight screen between enemy's
-            character = getch()
-            if character == b"n":
+        #     print(random_enemy)
+        #     print("This is only the test fight.")
+        #     print("The material will be added later on...")
+        #     # TODO: Create the fight screen between enemy's
+        #     character = getch()
+        #     if character == b"n":
+        #         clear()
+        #         break
+
+
+        def player_turn_normal_attack():
+            # Player turn
+            player_base_attack_value = self.player.strength
+            player_attack_value = int(round(uniform(0.8,1.0) * player_base_attack_value, 0))
+            enemy.hp -= player_attack_value
+            
+            if enemy.hp < 1:
+                print("You defeated the creature!")
+                print("Player acquire {} exp".format(enemy.exp))
+                print("Press any key to return to map...")
+                getch()
                 clear()
-                break
+                return True
+
+            else:
+                print("Player delivers {} damage".format(player_attack_value))
+                print("Player")
+                return False
+
+        def enemy_turn_normal_attack():
+            # Enemy turn
+            enemy_base_attack_value = enemy.strength
+            enemy_attack_value = int(round(uniform(0.8,1.0) * enemy_base_attack_value, 0))
+            self.player.hp -= enemy_attack_value
+            
+            if self.player.hp < 1:
+                print("You are defeated...")
+                print("Game Over...")
+                getch()
+                clear()
+                return True
+
+            else:
+                print("Enemy delivers {} damage".format(enemy_attack_value))
+                print("Player")
+                return False
+
+
+        # Displayed for generating 
+        while True:
+
+            for i in range(len(tmp_cursor)):
+                if i == cursor_selection:
+                    tmp_cursor[i] = cursor_selected + tmp_cursor[i]
+                else:
+                    tmp_cursor[i] = cursor_not_selected + tmp_cursor[i]
+
+            print("{} appears!".format(random_enemy))
+            self.display_status()
+            print("\n".join(tmp_cursor))
+            tmp_cursor = deepcopy(selection_list)
+            tmp = getch()
+
+            if tmp == "UP_KEY":
+                if cursor_selection > 0:
+                        cursor_selection -= 1
+                
+            elif tmp == "DOWN_KEY":
+                if cursor_selection < len(tmp_cursor) - 1:
+                        cursor_selection += 1
+
+            elif tmp == b"\r":
+
+                # Normally attack the enemy.
+                if cursor_selection == 0:
+
+                    # Turn based fight. However, the player can firstly fight for the enemy.
+                    if uniform(0.8, 1.0)*self.player.agility > uniform(0.8,1.0)* enemy.agility:
+                        if player_turn_normal_attack():
+                            break
+
+                        if enemy_turn_normal_attack():
+                            break
+
+                    else:
+                        if enemy_turn_normal_attack():
+                            break
+                        
+                        if player_turn_normal_attack():
+                            break
+
+                       
+                    
+                    
+                # Go to electronic. 
+                if cursor_selection == 1:
+                    
+                    clear()
+                    break
+
+                # Escape from the enemy
+                # The rate of the escape depends on the values of
+                # the success.
+                if cursor_selection == 2:
+                    
+                    clear()
+                    break
+            clear()
 
     # TODO: The encounter percentage must be changed
     # Take the luck of the player into account.
@@ -368,7 +482,7 @@ class Map(object):
         tmp = max(default_ememy_encounter, min_enemy_encounter)
 
         if 0 < k and k < tmp:
-            self.enemy_fight(self, self.player)
+            self.enemy_fight()
 
     def _initialize_map(self):
         self.map_grid = generate_maze_grid(make_maze_grid(self.width,self.height))
@@ -436,8 +550,9 @@ class Map(object):
             elif tmp == b"\r":
                 # Yes case --> Initialise map.
                 if cursor_selection == 0:
-                    # TODO: Allow player to select yes or no to proceed to the next level.
+                    
                     self._initialize_map()
+                    self.level += 1
                     break
                 
                 # No case --> Do nothing.
@@ -611,11 +726,7 @@ class MainGame():
                 else:
                     tmp[i] = self.selection_not_made + tmp[i]
             
-            
             clear()
-            
-
-
     
 
 class Menu(object):

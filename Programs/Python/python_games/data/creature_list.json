@@ -13,6 +13,7 @@
         "mental_strength": 2,
         "luckiness": 3,
         "drop_item": "Potion",
+        "level" : 1,
         "exp": 10
     },
     "Bat": {
@@ -29,6 +30,7 @@
         "mental_strength": 2,
         "luckiness": 3,
         "drop_item": "Potion",
+        "level": 1,
         "exp": 15
     }
 }
