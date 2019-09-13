@@ -1,6 +1,7 @@
 import sys
 import os
 
+import json
 
 from lib.default_values import *
 
@@ -74,17 +75,30 @@ class Application(object):
         if not os.path.isdir(data_dir):
             os.mkdir(data_dir)
 
-        # Check whether the game data exist...
+        # 2. Check file existence
         if not os.path.isfile(file_path):
             open(file_path, 'a').close()
+        
+        tmp = None
+        with open(file_path, "r") as f:
+            string = f.read()
+            if string != "":
+                tmp = json.loads(f.read())
 
-        for i in self.list_of_parameters_right:
-            pass
+        try:
+            # Check whether the game data exist...
+            
+            for i in self.list_of_parameters_right:
+                pass
 
-        for i in self.list_of_parameters_left:
-            pass
-        with open("monster_list", "w") as f:
-            f.write("monster_list.json")
+            for i in self.list_of_parameters_left:
+                pass
+            
+            with open("monster_list", "w") as f:
+                f.write("monster_list.json")
+            
+        except ValueError:
+            print("Please input a proper value.")
 
 
 
