@@ -15,14 +15,14 @@ class Application(object):
     
         # Create main window
         self.root = tk.Tk()
-        self.root.title("Monster editor")
+        self.root.title("Maze Creature Editor")
 
         self.menubar = tk.Menu(self.root)
         self.menubar.add_command(label = "Quit", command = self.root.destroy)
 
         self.root.config(menu=self.menubar)
         # List of parameters that users would like to adjust.
-        self.list_of_parameters_right = ["monster_name", "hp", "mp", "sp", "ep", "strength", 
+        self.list_of_parameters_right = ["creature_name", "hp", "mp", "sp", "ep", "strength", 
         "agility", "vitality", "dexterity", "smartness", "magic_power", "mental_strength", "luckiness"]
 
         self.list_of_parameters_left = ["exp", "drop_item"]
@@ -79,28 +79,37 @@ class Application(object):
         if not os.path.isfile(file_path):
             open(file_path, 'a').close()
         
-        tmp = None
+        # Main frame for putting monster
+        main_creature_data = {}
+
+        # Get creature name
+        main_creature_name = eval("self.creature_name_input_box.get()")
+        tmp = {}
+
         with open(file_path, "r") as f:
             string = f.read()
             if string != "":
-                tmp = json.loads(f.read())
+                main_creature_data = json.loads(string)
+            else:
+                main_creature_data = {}
 
-        try:
+        # try:
             # Check whether the game data exist...
-            
-            for i in self.list_of_parameters_right:
-                pass
 
-            for i in self.list_of_parameters_left:
-                pass
-            
-            with open("monster_list", "w") as f:
-                f.write("monster_list.json")
-            
-        except ValueError:
-            print("Please input a proper value.")
+        for i in self.list_of_parameters_right[1:]:
+            exec("tmp[i] = int(self.{0}_input_box.get())".format(i))
 
+        exec("""tmp["{0}"] = self.{0}_input_box.get()""".format("drop_item"))
+        exec("""tmp["{0}"] = int(self.{0}_input_box.get())""".format("exp"))
 
+        # Put & update the data of main creature data.
+        main_creature_data[main_creature_name] = tmp
+
+        with open(file_path, "w") as f:
+            f.write(json.dumps(main_creature_data, indent = 4))
+            
+        # except :
+        #     print("Please input a proper value.")
 
 # Start the application
 def main():
