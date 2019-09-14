@@ -155,10 +155,6 @@ class MazeObject(object):
     def _init_parameters_equipment(self):
         pass
 
-    # Experience gained after the battles or through the items.
-    def gained_exp(self):
-        pass
-
     # Player can wear his or her own weapon, accessory or armor
     def attach_item(self, item):
         pass
@@ -173,7 +169,6 @@ class MazeObject(object):
     # Initialise player when the game is started.
     def initialise_player(self):
         pass
-
 
     # Used for generating json data for saving character's data.
     def return_character_data_json(self):
@@ -194,22 +189,25 @@ class MazeObject(object):
     
     # The system of the calculation of the level
     def get_experience(self, exp_values):
-        self.current_exp += exp_values
 
+        self.current_exp += exp_values
         self.next_exp -= exp_values
 
         while self.next_exp < 1:
-            
             remain = self.next_exp
             self.bonus_point += 5 + self.level // 5
             self.level += 1
+            
+            # Bonus point is added for allowing users to select the ability to improve based on
+            # their preference.
             print("Player level up!")
             print("You gained {} bonus points.".format(self.bonus_point))
             print("Player reached to level {}".format(self.level))
             
+            # Randomly allocate the values once the level is up
             for _ in range(3 + (self.level // 10)):
                 tmp_choice = choice(numerical_player_strengh + non_numerical_player_strength)
-                # Randomly allocate the values once the level is up
+                
                 if tmp_choice in numerical_player_strengh:
                     exec("""self.{} += 5""".format(tmp_choice))
                     print("The {} value increases by 5!".format(tmp_choice))
