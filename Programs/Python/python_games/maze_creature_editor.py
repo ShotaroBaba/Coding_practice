@@ -43,7 +43,6 @@ class Application(object):
         self.main_group_left = tk.Frame(self.main_list_frame)
         self.main_group_left.pack(side = tk.LEFT, padx = 3, pady =3)
 
-
             
         for i,parameter_list in enumerate(self.list_of_parameters_right):
             exec("""self.{0}_adjust_label = tk.Label(self.main_group_left, text = "{0}: " )""". format(parameter_list))

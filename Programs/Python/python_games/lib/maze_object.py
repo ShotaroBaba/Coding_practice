@@ -60,6 +60,7 @@ class MazeObject(object):
         # TODO: Implement luckiness effects
         self.luckiness = return_json_value_data("luckiness", 10, json_data, level, is_random)
 
+
         # Check whether it is a player, an enemy or just an object
         self.player_name = json_data["player_name"]\
             if json_data != {} and "player_name" in json_data.keys() else "None"
@@ -69,14 +70,17 @@ class MazeObject(object):
             if json_data != {} and "is_player" in json_data.keys() else True
         self.is_enemy = json_data["is_enemy"]\
             if json_data != {} and "is_enemy" in json_data.keys() else  False
+        
 
         # Show the objects that player wields
         self.head = json_data["head"]\
-            if json_data != {} and "is_enemy" in json_data.keys() else "Empty"
+            if json_data != {} and "head" in json_data.keys() else "Empty"
         self.arm =  json_data["arm"]\
             if json_data != {} and "arm" in json_data.keys() else "Empty"
         self.leg = json_data["leg"]\
             if json_data != {} and "leg" in json_data.keys() else "Empty"
+        self.body_armor = json_data["body_armor"]\
+            if json_data != {} and "body_armor" in json_data.keys() else "Empty"
 
         
         self.right_wrist = json_data["right_wrist"]\
@@ -103,7 +107,7 @@ class MazeObject(object):
 
         # Check how the character is displayed.
         self.displayed_character = json_data["displayed_character"]\
-            if json_data != {} and "displayed_character" in json_data.keys() else "@"
+            if json_data != {} and "displayed_character" in json_data.keys() else "\033[91m" + "@" + "\033[0m"
 
         # The maximum number of items that Objects can hold
         # It can be increased by the level up.
@@ -129,11 +133,11 @@ class MazeObject(object):
 
         # Item numbers is recorded in the dictionary type
         self.items = json_data["items"]\
-            if json_data != {} and "items" in json_data.keys() else {}
+            if json_data != {} and "items" in json_data.keys() else []
 
         # TODO Create the skill classes for users
         self.skills = json_data["skills"]\
-            if json_data != {} and "skills" in json_data.keys() else {}
+            if json_data != {} and "skills" in json_data.keys() else []
 
         # Rank that can be used for adjusting the random encounter in dungeon.
         self.rank = json_data["rank"]\

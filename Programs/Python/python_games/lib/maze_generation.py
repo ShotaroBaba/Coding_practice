@@ -11,18 +11,6 @@ width_default = 5
 # Initialize and create the grid
 # The form of the grid is as follows:
 
-# wwwwwwwwwwwwwwww
-# w#w#w#w#w#w#w#ww
-# wwwwwwwwwwwwwwww
-# w#w#w#w#w#w#w#ww
-# wwwwwwwwwwwwwwww
-# w#w#w#w#w#w#w#ww
-# wwwwwwwwwwwwwwww
-# w#w#w#w#w#w#w#ww
-# wwwwwwwwwwwwwwww
-# w#w#w#w#w#w#w#ww
-# wwwwwwwwwwwwwwww
-
 # Set direction.
 direction = {"N": (0,-1), "S":(0,1),"E":(1,0), "W":(-1,0)}
 opposite_direction  = {"N":"S", "S":"N", "E":"W", "W":"E"}

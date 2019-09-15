@@ -25,9 +25,6 @@ class GameMenu():
         self.selection_not_made = " "
         self.start_main_menu()
 
-        # Create 10x10 maps after creating maps.
-        self.random_map = MainGame()
-
     # Check whether it will load the games or not.
     def start_main_menu(self):
         clear()
@@ -35,7 +32,9 @@ class GameMenu():
         cursor_value = 0
         
         # Deep copy the selection values
+        # to allow arrow movements.
         tmp = deepcopy(self.menu_selection)
+
         # Initialize the start menu.
         for i in range(len(tmp)):
             if i == cursor_value:
@@ -47,14 +46,21 @@ class GameMenu():
         while True:
             print("\n".join(tmp))
             character = getch()
-
             tmp = deepcopy(self.menu_selection)
+
             # Temporary breaking point for testing program
             if character == b"\r" and cursor_value == 0:
+                # Create 10x10 maps after creating maps.
+                self.random_map = MainGame()
                 break
             
             # TODO: Allows to load the data.
             elif character == b"\r" and cursor_value == 1:
+                self.random_map = MainGame(load_data = True)
+                break
+            
+            # Exit game.
+            elif character == b"\r" and cursor_value == 2:
                 break
 
             else:
