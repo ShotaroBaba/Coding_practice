@@ -13,7 +13,7 @@
         "mental_strength": 2,
         "luckiness": 3,
         "drop_item": "Potion",
-        "level" : 1,
+        "level": 1,
         "exp": 10
     },
     "Bat": {
@@ -32,5 +32,22 @@
         "drop_item": "Potion",
         "level": 1,
         "exp": 15
+    },
+    "Small dragon": {
+        "hp": 30,
+        "mp": 20,
+        "sp": 20,
+        "ep": 15,
+        "strength": 5,
+        "agility": 5,
+        "vitality": 7,
+        "dexterity": 5,
+        "smartness": 4,
+        "magic_power": 5,
+        "mental_strength": 5,
+        "luckiness": 7,
+        "drop_item": "Potion",
+        "level": 4,
+        "exp": 40
     }
 }

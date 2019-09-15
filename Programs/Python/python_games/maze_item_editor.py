@@ -5,35 +5,40 @@ import json
 from lib.default_values import *
 import tkinter as tk
 
-file_path = os.path.join(data_dir,creature_data_file_name)
+# Maze item editor
+file_path = os.path.join(data_dir,item_data_file_name)
+# When used, the item will creates the following effects if they have...
+        
+
 class Application(object):
 
     def __init__(self):
     
         # Create main window
         self.root = tk.Tk()
-        self.root.title("Maze Creature Editor")
+        self.root.title("Maze Item Editor")
 
         self.menubar = tk.Menu(self.root)
         self.menubar.add_command(label = "Quit", command = self.root.destroy)
 
         self.root.config(menu=self.menubar)
         # List of parameters that users would like to adjust.
-        self.list_of_parameters_right = ["creature_name", "hp", "mp", "sp", "ep", "strength", 
-        "agility", "vitality", "dexterity", "smartness", "magic_power", "mental_strength", "luckiness", "level"]
+        self.list_of_parameters_right = ["item_name","hp_change", "mp_change", "sp_change", "ep_change", 
+        "strength_change", "agility_change", "vitality_change", "dexterity_change", "smartness_change",]
 
-        self.list_of_parameters_left = ["exp", "drop_item"]
-
+        self.list_of_parameters_left = ["magic_power_change","mental_strength_change", "luckiness_change", "effective_time", "durablity_change", "weight"]
         self.start_window()
-    # The list of parameters that users would like to adjust for creating monsters.
 
+    # The list of parameters that users would like to adjust for creating monsters.
     def start_window(self):
-        self.monster_list = []
+        self.item_list = {}
         try:
             with open(file_path, "r") as f:
-                self.monster_list = json.loads(f.read()) 
+                self.item_list = json.loads(f.read()) 
         except:
-            print("Error when loading the file.")
+            with open(file_path, "a") as f:
+                f.close()
+
         self.main_group = tk.Frame(self.root)
         self.main_group.pack()
 
@@ -55,7 +60,8 @@ class Application(object):
         self.main_group_list_box = tk.Listbox(self.main_group_list_box_frame, yscrollcommand = self.main_group_list_box_scroll.set)
         self.main_group_list_box.pack(side = tk.LEFT, fill = tk.Y)
 
-        for name in list(self.monster_list.keys()):
+        
+        for name in list(self.item_list.keys()):
             self.main_group_list_box.insert(tk.END, name)
 
         for i,parameter_list in enumerate(self.list_of_parameters_right):
@@ -91,45 +97,41 @@ class Application(object):
             open(file_path, 'a').close()
         
         # Main frame for putting monster
-        main_creature_data = {}
+        main_item_data = {}
 
         # Get creature name
-        main_creature_name = eval("self.creature_name_input_box.get()")
+        main_item_name = eval("self.item_name_input_box.get()")
         tmp = {}
 
         with open(file_path, "r") as f:
             string = f.read()
             if string != "":
-                main_creature_data = json.loads(string)
+                main_item_data = json.loads(string)
             else:
-                main_creature_data = {}
+                main_item_data = {}
 
         # try:
             # Check whether the game data exist...
 
-        for i in self.list_of_parameters_right[1:]:
+        for i in self.list_of_parameters_right[1:] + self.list_of_parameters_left:
             exec("tmp[i] = int(self.{0}_input_box.get())".format(i))
-
-        exec("""tmp["{0}"] = self.{0}_input_box.get()""".format("drop_item"))
-        exec("""tmp["{0}"] = int(self.{0}_input_box.get())""".format("exp"))
-
         # Put & update the data of main creature data.
-        main_creature_data[main_creature_name] = tmp
+        main_item_data[main_item_name] = tmp
 
         with open(file_path, "w") as f:
-            f.write(json.dumps(main_creature_data, indent = 4))
+            f.write(json.dumps(main_item_data, indent = 4))
             
         # Reload the list after saving creature data.
         
         try:
             with open(file_path, "r") as f:
-                self.monster_list = json.loads(f.read()) 
+                self.item_list = json.loads(f.read()) 
         except:
             print("Error when loading the file.")
         
         self.main_group_list_box.delete(0,tk.END)
 
-        for name in self.monster_list.keys():
+        for name in self.item_list.keys():
             self.main_group_list_box.insert(tk.END, name)
         # except :
         #     print("Please input a proper value.")
@@ -141,22 +143,16 @@ class Application(object):
         idx = int(w.curselection()[0])
         value = w.get(idx)
 
-        self.creature_name_input_box.delete(0,tk.END)
-        self.creature_name_input_box.insert(0,value)
+        self.item_name_input_box.delete(0,tk.END)
+        self.item_name_input_box.insert(0,value)
     
         for parameter_list in self.list_of_parameters_right[1:]:
             exec("self.{0}_input_box.delete(0,tk.END)".format(parameter_list))
-            exec("self.{0}_input_box.insert(0,{1})".format(parameter_list,self.monster_list[value][parameter_list]))
+            exec("self.{0}_input_box.insert(0,{1})".format(parameter_list,self.item_list[value][parameter_list]))
         
-        for parameter_list in self.list_of_parameters_left[:-1]:
+        for parameter_list in self.list_of_parameters_left:
             exec("self.{0}_input_box.delete(0,tk.END)".format(parameter_list))
-            exec("self.{0}_input_box.insert(0,{1})".format(parameter_list,self.monster_list[value][parameter_list]))
-        
-        exec("""self.{0}_input_box.delete(0, tk.END)""".format("drop_item"))
-        exec("""self.{0}_input_box.insert(0,"{1}")""".format("drop_item", self.monster_list[value]["drop_item"]))
-        
-        exec("""self.{0}_input_box.delete(0, tk.END)""".format("exp"))
-        exec("""self.{0}_input_box.insert(0,"{1}")""".format("exp", self.monster_list[value]["exp"]))
+            exec("self.{0}_input_box.insert(0,{1})".format(parameter_list,self.item_list[value][parameter_list]))
     
 # Start the application
 def main():

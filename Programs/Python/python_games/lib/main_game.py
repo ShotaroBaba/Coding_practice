@@ -131,8 +131,10 @@ class MainGame(object):
         tmp_cursor = deepcopy(selection_list)
         cursor_selection = 0
         
-        random_enemy = choice(list(enemy_json.keys()))
-        enemy = MazeObject(json_data = enemy_json[random_enemy], level = self.level, is_random="yes")
+        enemy_list = [enemy for enemy in enemy_json.keys() if enemy_json[enemy]["level"] - self.level <= 0]
+
+        random_enemy = choice(list(enemy_list))
+        enemy = MazeObject(json_data = enemy_json[random_enemy], level = self.level, is_random= "yes")
 
 
         def _player_turn_normal_attack():
@@ -183,7 +185,7 @@ class MainGame(object):
                     tmp_cursor[i] = cursor_not_selected + tmp_cursor[i]
 
             print("{} appears!".format(random_enemy))
-            self.display_status()
+            self._display_status()
             print("\n".join(tmp_cursor))
             tmp_cursor = deepcopy(selection_list)
             tmp = getch()
@@ -215,6 +217,7 @@ class MainGame(object):
                             break
                     
                 # TODO: Create the function that handles player's skills.
+                # Displays the player's status.
                 elif cursor_selection == 1:    
                     print("This feature will be implemented later...")
                     getch()
@@ -238,7 +241,7 @@ class MainGame(object):
 
     # TODO: The encounter percentage must be changed
     # Take the luck of the player into account.
-    def enemy_encounter(self, player_luck_value):
+    def _enemy_encounter(self, player_luck_value):
         k = random()
 
         # TODO: Make the possibility calculation possible...
@@ -301,7 +304,6 @@ class MainGame(object):
         
         while True:
 
-            
             self._draw_hidden_map()
             for i in range(len(tmp_cursor)):
                 if i == cursor_selection:
@@ -336,7 +338,7 @@ class MainGame(object):
             clear()
 
 
-    def display_status(self):
+    def _display_status(self):
         print("HP: {}, MP: {}, SP: {}, EP: {}".format(self.player.current_hp, 
         self.player.current_mp,
         self.player.current_sp, 
@@ -459,10 +461,9 @@ class MainGame(object):
             clear()
 
             # Enemy appears before reaches a goal.
-            self.enemy_encounter(self.player.luckiness)
-
-
+            self._enemy_encounter(self.player.luckiness)
             self._move_player_sub(str_direction, next_player_pos)
+
             # TODO: Allow player to select yes or no to proceed to the next level.
             self._map_proceed_selection()
 
@@ -475,15 +476,13 @@ class MainGame(object):
             self._move_player_sub(str_direction, next_player_pos)
             
             # Draw the enemy encouter screen.
-            self.enemy_encounter(self.player.luckiness)
+            self._enemy_encounter(self.player.luckiness)
 
             self._draw_hidden_map()
             
         else:
             clear()
             self._draw_hidden_map()
-
-    
 
     # Randomly place player
     def _randomly_place_player(self,player):
@@ -518,7 +517,7 @@ class MainGame(object):
 
         self._reveal_map_grid()
         tmp_str = ""
-        
+
         # NOTE: x: height, y: length
         for y in range(len(self.hidden_map_grid[0])):
             for x in range(len(self.hidden_map_grid)):
@@ -527,6 +526,6 @@ class MainGame(object):
         
         # Print map
         print(tmp_str)
-        self.display_status()
+        self._display_status()
 
 

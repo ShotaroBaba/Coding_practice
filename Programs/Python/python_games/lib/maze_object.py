@@ -15,10 +15,6 @@ def return_json_value_data(key_value, default_value, json_data, level  = 1, is_r
     else:
         return default_value
 
-    # return json_data[key_value] \
-    #     if json_data != {} else json_data[key_value] * default_value * random.uniform(level-1, level) \
-    #         if is_random == "yes" and json_data != {} else default_value
-
 constant_next_level_exp = 1.4
 
 class MazeObject(object):
@@ -135,6 +131,10 @@ class MazeObject(object):
         self.items = json_data["items"]\
             if json_data != {} and "items" in json_data.keys() else []
 
+        # Item weight limit
+        self.weight_limit = json_data["weight_limit"]\
+            if json_data != {} and "weight_limit" in json_data.keys() else 10 + int(self.strength // (1.5 + self.strength // 20))
+        
         # TODO Create the skill classes for users
         self.skills = json_data["skills"]\
             if json_data != {} and "skills" in json_data.keys() else []
@@ -188,6 +188,11 @@ class MazeObject(object):
     
     def move_object_right(self, key_event):
         pass
+    
+    # Update values everytime the player walks or level-up.
+    # TODO: Added several features later...
+    def update_object(self):
+        self.weight_limit = 10 + int(self.strength // (1.5 + self.strength // 20))
     
     # The system of the calculation of the level
     def get_experience(self, exp_values):
