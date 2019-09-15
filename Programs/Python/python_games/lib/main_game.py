@@ -353,7 +353,7 @@ class MainGame(object):
         cursor_not_selected = " "
         cursor_selected = ">"
         tmp_cursor = deepcopy(selection_list)
-        cursor_selection = 1
+        cursor_selection = 0
         
         while True:
             for i in range(len(tmp_cursor)):
@@ -366,6 +366,7 @@ class MainGame(object):
 
             tmp_cursor = deepcopy(selection_list)
             tmp = getch()
+            
             if tmp == "UP_KEY":
                 if cursor_selection > 0:
                     cursor_selection -= 1
@@ -382,19 +383,19 @@ class MainGame(object):
                 # Next TODO: To create player data save.
                 if cursor_selection == 1:
                     self.save_data()
-                    pass
                 
                 # Displaying player's status, allowing users to
                 # improve status using bonus points.
                 if cursor_selection == 2:
-                    pass
+                    self._display_player_status()
+
                 
                 if cursor_selection == 3:
-                    pass
+                    clear()
+                    self._draw_hidden_map()
+                    break
 
                 clear()
-                self._draw_hidden_map()
-                break
 
             elif tmp == b"\x1b":
                 clear()
@@ -403,6 +404,66 @@ class MainGame(object):
 
             clear()
     
+    def _display_player_status(self):
+
+        numerical_player_strengh = ["hp", "mp", "sp", "ep"]
+        non_numerical_player_strength = ["strength", "agility", "vitality", "dexterity",
+                                        "smartness", "magic_power", "mental_strength", "luckiness"]
+        exit_to_player_menu = ["Exit"] 
+        section_selected = ">"
+        section_non_selected = " "
+        selection_idx = 0
+        selection_str_list = numerical_player_strengh + non_numerical_player_strength + exit_to_player_menu
+        clear()
+
+        while True:
+            
+            tmp = deepcopy(selection_str_list)
+            for i in range(len(tmp)):
+                if i < len(tmp) -1:
+                    if selection_idx  == i:
+                        tmp[i] = section_selected + tmp[i] + ": "+ str(eval("self.player.{}".format(tmp[i])))
+                    else:
+                        tmp[i] = section_non_selected + tmp[i] + ": "+ str(eval("self.player.{}".format(tmp[i])))
+                else:
+                    if selection_idx  == i:
+                        tmp[i] = section_selected + tmp[i]
+                    else:
+                        tmp[i] = section_non_selected + tmp[i]
+
+            print("="*30)
+            print("\n".join(tmp))
+            print("="*30)
+            print("Bonus point: {}".format(self.player.bonus_point))
+            ch = getch()
+
+            if ch == b'\r':
+                
+                if selection_idx < 3 and self.player.bonus_point > 0:
+                    exec("self.player.{} += 5".format(selection_str_list[selection_idx]))
+                    self.player.bonus_point -= 1
+                elif selection_idx >= 3 and selection_idx < len(tmp) - 1 and self.player.bonus_point > 0:
+                    exec("self.player.{} += 1".format(selection_str_list[selection_idx]))
+                    self.player.bonus_point -= 1
+
+                elif selection_idx == len(tmp) - 1:
+                    break
+            
+            elif ch == "UP_KEY":
+                if selection_idx > 0:
+                    selection_idx -= 1
+                
+            elif ch == "DOWN_KEY":
+                if selection_idx < len(tmp) - 1:
+                    selection_idx += 1
+            
+            elif ch == b'\x1b':
+                break
+
+            clear()
+        clear()
+
+
     # Save player's data and attributes.
     def save_data(self):
         # The value for storing player data.
