@@ -1,7 +1,6 @@
 # Reading all necessary packages
 import sys
 sys.path.insert(0, 'lib/maze_generation.py')
-sys.path.insert(0, 'lib/getch.py')
 
 import os
 import json 
@@ -21,8 +20,9 @@ from default_values import *
 # The value which determine the difficulty of level increase.
 constant_next_level_exp = 1.4
 
+default_amount_to_reveal = 3
 # Load creatures.
-creature_file_path = os.path.join(data_dir,monster_data_file_name)
+creature_file_path = os.path.join(data_dir,creature_data_file_name)
 enemy_json = json.loads(open(creature_file_path, "r").read())
 
 
@@ -47,7 +47,14 @@ min_enemy_encounter = 0.1
 numerical_player_strengh = ["hp", "mp", "sp", "ep"]
 current_status_player = ["current_hp", "current_mp", "current_sp", "current_ep"]
 
-non_numerical_player_strength = ["strength", "agility", "vitality", "dexterity", "smartness", "magic_power", "mental_strength"]   
+non_numerical_player_strength = ["strength", "agility", "vitality",
+                                 "dexterity", "smartness", "magic_power", "mental_strength"]   
+
+string_numerical_player_strength = ["player_name", "is_living", "is_player", 
+                                    "is_enemy", "arm", "leg", "right_wrist", "left_wrist", 
+                                    "right_finger", "left_finger", "status", "displayed_character",
+                                    "max_item_hold", "exp", "current_exp", "bonus_point", "next_exp", "items",
+                                    "skills", "rank", "drop_item"]
 
 # TODO: Difficulty will be selected
 
@@ -69,11 +76,19 @@ class MainGame(object):
     # places.
 
     # When loading the game the game will
-    def __init__(self):
+    # loaded_map: map to be loaded.
+    # loaded_player: player data to be loaded.
+    def __init__(self, loaded_map = {}, loaded_player = {}):
         
         # Putting player object first
         # Test purpose for putting player.
-        self.player = MazeObject()
+        if loaded_player != {}:
+            self.load_player_data()
+        else:
+            self.player = MazeObject()
+
+        # Amount to reveal.
+        self.default_amount_to_reveal = default_amount_to_reveal
 
         # Clear the screen before drawing map
         self.width = width
@@ -87,12 +102,20 @@ class MainGame(object):
         self._initialize_map()
         clear()
 
-        self.draw_map()
-    
-        self._manipulate_map_main_menu()
+        
+        
+        # Reveal map grid from the center of the player.
+        self.reveal_map_grid()
 
+        self.draw_hidden_map()
+        
+        self._manipulate_map()
+
+    # Load player's data.
+    def load_player_data(self):
+        pass
     
-    def _manipulate_map_main_menu(self):
+    def _manipulate_map(self):
         while True:
             character = getch()
             
@@ -196,7 +219,7 @@ class MainGame(object):
                 # Normally attack the enemy.
                 if cursor_selection == 0:
 
-                    # Turn based fight. However, the player can firstly fight for the enemy.
+                    # Turn based fight. The player can firstly fight for the enemy this value is higher.
                     if uniform(0.8, 1.0)*self.player.agility > uniform(0.8,1.0)* enemy.agility:
                         if player_turn_normal_attack():
                             break
@@ -210,18 +233,18 @@ class MainGame(object):
                             break
                     
                 # TODO: Create the function that handles player's skills.
-                if cursor_selection == 1:    
+                elif cursor_selection == 1:    
                     clear()
                     break
 
-                # Escape from the enemy
+                # Escape from the enemy.
                 # The rate of the escape depends on the values of
                 # the success.
-                if cursor_selection == 2:            
+                elif cursor_selection == 2:            
                     clear()
                     break
 
-                if cursor_selection == 3:
+                elif cursor_selection == 3:
                     clear()
                     break
 
@@ -245,6 +268,7 @@ class MainGame(object):
         # Randomly place objects, including goals and treasure boxes.
         self.randomly_place_objects(self.goal_symbol)
         
+        # Randomly place treasure.
         for _ in range(randint(0,10)):
             self.randomly_place_objects(self.treasure_symbol)
         
@@ -252,11 +276,22 @@ class MainGame(object):
 
         # TODO: Create and show the hidden map grid.
         self.hidden_map_grid = [["." for _ in range(len(self.map_grid))] for _ in range(len(self.map_grid[0]))]
-
+       
         self.direction = direction
         
         # Randomly place goal
         self.randomly_place_player(self.player)
+
+        
+    # Reveal the grid of the map based on the player's location.
+    def reveal_map_grid(self):
+
+        for i in range(max(0, self.player.object_pos[0] - self.default_amount_to_reveal),\
+            min(self.player.object_pos[0] + self.default_amount_to_reveal, len(self.map_grid[0]))):
+            for j in range(max(0, self.player.object_pos[1] - self.default_amount_to_reveal),\
+                min(self.player.object_pos[1] + self.default_amount_to_reveal, len(self.map_grid))):
+                # Find Reveal the maps.
+                    self.hidden_map_grid[i][j] = self.map_grid[i][j]
 
     def _move_player_sub(self,str_direction, next_player_pos):
         # Initialize map using originally created random map.
@@ -279,7 +314,9 @@ class MainGame(object):
         cursor_selection = 1
         
         while True:
-            self.draw_map()
+
+            
+            self.draw_hidden_map()
             for i in range(len(tmp_cursor)):
                 if i == cursor_selection:
                     tmp_cursor[i] = cursor_selected + tmp_cursor[i]
@@ -323,7 +360,8 @@ class MainGame(object):
     def player_menu(self):
         clear()
         
-        selection_list = ["Item", "Save", "Exit"]
+        # There is no load function until player moves to exit.
+        selection_list = ["Item", "Save","Status", "Exit"]
         cursor_not_selected = " "
         cursor_selected = ">"
         tmp_cursor = deepcopy(selection_list)
@@ -351,51 +389,63 @@ class MainGame(object):
             elif tmp == b"\r":
                 # Yes case --> Initialise map.
                 if cursor_selection == 0:
-                    clear()
-                    self.draw_map()
-                    break
-                
+                    pass
+
                 # Next TODO: To create player data save.
-                # No case --> Do nothing.
                 if cursor_selection == 1:
-                    clear()
-                    self.draw_map()
-                    break
+                    pass
                 
-                # 
+                # Displaying player's status, allowing users to
+                # improve status using bonus points.
                 if cursor_selection == 2:
-                    clear()
-                    self.draw_map()
-                    break
-            
+                    pass
+                
+                if cursor_selection == 3:
+                    pass
+
+                clear()
+                self.draw_hidden_map()
+                break
+
             elif tmp == b"\x1b":
                 clear()
-                self.draw_map()
+                self.draw_hidden_map()
                 break
 
             clear()
-
-        
-        pass
     
     # Save player's data and attributes.
     def save_data(self):
         # The value for storing player data.
-        saved_data = {}
+        saved_data_dic = {}
         
-        joined_path = os.path.isfile(os.path.join(save_data_folder, save_data_file_name))
+        joined_path = os.path.join(save_data_folder, save_data_file_name)
 
+        # If directory does not exist, then it will be created.
         if not os.path.isdir(save_data_folder):
-            os.mkdir()
+            os.mkdir(save_data_folder)
 
+        # File is created if it does not exist.
         if not os.path.isfile(joined_path):
-            with open(joined_path, "w") as f:
-                f.write()
+            open(joined_path, 'a').close()
 
+        for attribute in numerical_player_strengh + current_status_player + non_numerical_player_strength + \
+            string_numerical_player_strength:
+            exec("""saved_data_dic["{0}"] = self.player.{0}""".format(attribute))
 
-        for attribute in numerical_player_strengh + current_status_player + non_numerical_player_strength:
-            exec("""saved_data["{0}"] = self.{0} """.format(attribute))
+        # Player location is saved
+
+        saved_data_dic["object_pos"] = self.player.object_pos
         
+        saved_data_dic["map_grid"] = self.original_map_grid
+
+        with open(joined_path, 'w') as f:
+            f.write(json.dumps(saved_data_dic, indent = 4)) 
+
+
+
+    def load_data(self):
+        pass
 
     # It is called every time the cursor is moved.
     def move_player(self,str_direction):
@@ -417,7 +467,7 @@ class MainGame(object):
             self._map_proceed_selection()
 
             clear()
-            self.draw_map()
+            self.draw_hidden_map()
 
         elif self.original_map_grid[next_player_pos[0]][next_player_pos[1]] != "#":
             clear()
@@ -427,14 +477,13 @@ class MainGame(object):
             # Draw the enemy encouter screen.
             self.enemy_encounter(self.player.luckiness)
 
-            self.draw_map()
+            self.draw_hidden_map()
             
         else:
             clear()
-            self.draw_map()
-    
-    # Appears when pressing escape button.
+            self.draw_hidden_map()
 
+    
 
     # Randomly place player
     def randomly_place_player(self,player):
@@ -468,6 +517,7 @@ class MainGame(object):
         pass
 
     # Draw the map on the screen.
+    # Will be obsolete.
     def draw_map(self):
         tmp_str = ""
         # NOTE: x: height, y: length
@@ -482,10 +532,26 @@ class MainGame(object):
         # Print map
         print(tmp_str)
         self.display_status()
+
+    # Mainly used for drawing maps.
+    # Draw the hidden map on the screen.
+    def draw_hidden_map(self):
+        self.reveal_map_grid()
+        tmp_str = ""
+        # NOTE: x: height, y: length
+        for y in range(len(self.hidden_map_grid[0])):
+            for x in range(len(self.hidden_map_grid)):
+                if self.hidden_map_grid[x][y] == "@":
+                    tmp_str += "\033[91m" + self.hidden_map_grid[x][y] + "\033[0m"
+                else:
+                    tmp_str += self.hidden_map_grid[x][y]
+            tmp_str += "\n"
         
+        # Print map
+        print(tmp_str)
+        self.display_status()
+
+
     # Saves the data of the maps into json file.
     def save_map_data(self):
         pass
-
-# Display menu so that users are able to control a person.
-# TODO: Create the menu class

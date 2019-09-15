@@ -70,21 +70,19 @@ class MazeObject(object):
         self.is_enemy = json_data["is_enemy"]\
             if json_data != {} and "is_enemy" in json_data.keys() else  False
 
-        # Show the objects that player wields.
-        self.right_arm = json_data["right_arm"]\
-            if json_data != {} and "right_arm" in json_data.keys() else "Empty"
-        self.left_arm = json_data["left_arm"] if\
-            json_data != {} and "left_arm" in json_data.keys() else "Empty"
-
+        # Show the objects that player wields
         self.head = json_data["head"]\
             if json_data != {} and "is_enemy" in json_data.keys() else "Empty"
         self.arm =  json_data["arm"]\
             if json_data != {} and "arm" in json_data.keys() else "Empty"
         self.leg = json_data["leg"]\
             if json_data != {} and "leg" in json_data.keys() else "Empty"
-        self.wrist = json_data["wrist"]\
-            if json_data != {} and "wrist" in json_data.keys() else "Empty"
 
+        
+        self.right_wrist = json_data["right_wrist"]\
+            if json_data != {} and "right_wrist" in json_data.keys() else "Empty"
+        self.left_wrist = json_data["left_wrist"]\
+            if json_data != {} and "left_wrist" in json_data.keys() else "Empty"
         self.right_finger = json_data["right_finger"]\
             if json_data != {} and "right_finger" in json_data.keys() else "Empty"
         self.left_finger = json_data["left_finger"]\
@@ -142,7 +140,7 @@ class MazeObject(object):
             if json_data != {} and "rank" in json_data.keys() else {}
 
         # The monster will drop the item
-        self.rank = json_data["drop_item"]\
+        self.drop_item = json_data["drop_item"]\
             if json_data != {} and "drop_item" in json_data.keys() else {}
 
     # Apply skills to a certain person, enemy or items

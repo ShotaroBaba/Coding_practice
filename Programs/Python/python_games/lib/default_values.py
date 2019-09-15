@@ -1,9 +1,9 @@
 
 data_dir = "data"
-monster_data_file_name = "creature_list.json"
+creature_data_file_name = "creature_list.json"
 
 save_data_file_name = "save_data.json"
-save_data_folder = "save_data"
+save_data_folder = "savedata"
 
 
 

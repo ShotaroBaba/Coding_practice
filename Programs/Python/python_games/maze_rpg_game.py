@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, 'lib')
+
 
 from lib.clear_screen import clear
 from lib.main_game import MainGame

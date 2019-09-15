@@ -69,7 +69,7 @@ class Application(object):
 
     def save_monster_data(self):
 
-        file_path = os.path.join(data_dir,monster_data_file_name)
+        file_path = os.path.join(data_dir,creature_data_file_name)
 
         # 1. Check folder existence
         if not os.path.isdir(data_dir):
