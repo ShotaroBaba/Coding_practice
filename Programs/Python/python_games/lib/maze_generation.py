@@ -1,24 +1,23 @@
-# import os, pygame
-# from pygame.locals import *
-# from pygame.compat import geterror
-# import time
-
 from random import shuffle
 from random import randint
+
+height_default = 5
+width_default = 5
+
+
 # This game will become Role Playing Game where a person 
 # walks around the maze and fights with foes. Backtracing algorithm is used
 # for generating maze.
 
-# Initiall create the grid
+# Initialize and create the grid
 # The form of the grid is as follows:
 
+# Set direction.
 direction = {"N": (0,-1), "S":(0,1),"E":(1,0), "W":(-1,0)}
 opposite_direction  = {"N":"S", "S":"N", "E":"W", "W":"E"}
 # Firstly, make grid using list.
 # height and width must be positive integer.
 
-height_default = 5
-width_default = 5
 
 def make_maze_grid(width = height_default, height = width_default):
 
@@ -46,74 +45,74 @@ def make_maze_grid(width = height_default, height = width_default):
     return grid
 
 # Create maze first.
-def print_maze_grid(grid):
+def generate_maze_grid(grid):
     # Print maze based on the information on grid.
     # String used for generating maze.
-    maze_str = ""
 
     range_x = range(2 * len(grid[0]) + 1)
     range_y = range(2 * len(grid) + 1)
     max_x = len(list(range_x)) - 1
     max_y = len(list(range_y)) - 1
+
+    maze_list = []
+    tmp = []
     for y in range_y:
+        tmp = []
         for x in range_x:
             if x % 2 == 1 and y % 2 == 1: 
-                maze_str += " "
+                tmp.append(" ")
             elif x % 2 == 0 and y % 2 == 1:
                 if (x == 0 or x == max_x):
-                    maze_str += "w"
+                    tmp.append("#")
                 else:
                     # if W --> E
                     if "W" in grid[y//2][x//2-1] and "E" in grid[y//2][x//2]:
-                        maze_str += " "
+                        tmp.append(" ")
                     # if not, the wall is retained.
                     else:
-                        maze_str += "w" 
+                        tmp.append("#")
             elif y % 2 == 0 and x % 2 == 1:
                 if(y == 0 or y == max_y):
-                    maze_str += "w"
+                    tmp.append("#")
                 else:
                     # if N --> S, then the wall is removed.
-                    if "N" in grid[y//2 -1][x//2]and "S" in grid[y//2][x//2]:
-                
-                        maze_str += " "
+                    if "N" in grid[y//2 -1][x//2] and "S" in grid[y//2][x//2]:
+                        tmp.append(" ")
                     # if not, the wall is retained.
                     else:
-                        maze_str += "w" 
+                        tmp.append("#")
             else:
-                maze_str += "w"
-        maze_str += "\n"
-    print(maze_str)
+                tmp.append("#")
 
-    return maze_str
+        maze_list.append(tmp)
+    
+    return maze_list
 
-# Create maze first.
-def print_maze_grid_test(grid):
-    # Print maze based on the information on grid.
-
-    # String used for generating maze.
-    maze_str = ""
-
-    for y in range(2 * len(grid[0]) + 1):
-        for x in range(2 * len(grid) + 1):
-            if x % 2 == 1 and y % 2 == 1:
-                maze_str += " "
-            else:
-                maze_str += "w"
-        maze_str += "\n"
-    print(maze_str)
-
-
-grid = make_maze_grid(50,10)
-print_maze_grid_test(grid)
-print_maze_grid(grid)
-
-# TODO: Putting codes in the main program.
+# Main function for the test purpose...
 def main():
-    grid = make_maze_grid()
 
-    print(grid)
-    pass
+    print("Test maze generation (1)")
+    grid = make_maze_grid(10,10)
+    maze_str = generate_maze_grid(grid)
+    print(maze_str)
+    print("\n\n")
+
+    print("Test maze generation (2)")
+    grid = make_maze_grid(10,40)
+    maze_str = generate_maze_grid(grid)
+    print(maze_str)
+    print("\n\n")
+
+    print("Test maze generation (3)")
+    grid = make_maze_grid(40,10)
+    maze_str = generate_maze_grid(grid)
+    print(maze_str)
+    print("\n\n")
+
+    print("Test maze generation (4)")
+    grid = make_maze_grid(30,30)
+    maze_str = generate_maze_grid(grid)
+    print(maze_str)
 
 if __name__ == '__main__':
     main()
