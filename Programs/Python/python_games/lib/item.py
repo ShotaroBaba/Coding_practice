@@ -55,28 +55,28 @@ class Item(object):
     # Use item for player.
     def use_item(self, player):
         # TODO: Do not use item when a current value is the same as a maximum value.
-        hp_not_changed = True
-        mp_not_changed = True
-        sp_not_changed = True
-        ep_not_changed = True
+        hp_changed = False
+        mp_changed = False
+        sp_changed = False
+        ep_changed = False
 
         if player.current_hp != player.hp and self.hp_change != 0:
             player.current_hp = min(player.current_hp + self.hp_change, player.hp)
-            hp_not_changed = False
+            hp_changed = True
         
         if player.current_mp != player.mp and self.mp_change != 0:
             player.current_mp = min(player.current_mp + self.mp_change,player.mp)
-            mp_not_changed = False
+            mp_changed = True
         
         if player.current_sp != player.sp and self.sp_change != 0:
             player.current_sp = min(player.current_sp + self.sp_change,player.sp)
-            sp_not_changed = False
+            sp_changed = True
         
         if player.current_ep != player.ep and self.ep_change != 0:
             player.current_ep = min(player.current_ep + self.ep_change,player.ep)
-            ep_not_changed = False
+            ep_changed = True
         
-        return hp_not_changed and mp_not_changed and sp_not_changed and ep_not_changed
+        return hp_changed or mp_changed or sp_changed or ep_changed
 
     # Equip item for player.
     def equip_item(self, player):

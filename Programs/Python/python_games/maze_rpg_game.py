@@ -44,6 +44,7 @@ class GameMenu():
 
         # Create the menu in accordance with player's input.
         while True:
+            print("Main menu")
             print("\n".join(tmp))
             character = getch()
             tmp = deepcopy(self.menu_selection)

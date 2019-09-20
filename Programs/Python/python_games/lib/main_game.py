@@ -356,7 +356,8 @@ class MainGame(object):
         
         self.player.current_ep = max(self.player.current_ep - 1, 0)
 
-        if self.player.current_ep:
+        # if the current ep is zero. the current hp will decreases.
+        if self.player.current_ep == 0:
             self.player.current_hp = max(self.player.current_hp - 1, 1)
 
     # Allows the users to select whether they will proceed to the next floor...
@@ -428,7 +429,7 @@ class MainGame(object):
                     tmp_cursor[i] = cursor_selected + tmp_cursor[i]
                 else:
                     tmp_cursor[i] = cursor_not_selected + tmp_cursor[i]
-            
+            print("Player Menu")
             print("\n".join(tmp_cursor))
 
             tmp_cursor = deepcopy(selection_list)
@@ -443,12 +444,10 @@ class MainGame(object):
                     cursor_selection += 1
 
             elif tmp == b"\r":
-                
-                
+
                 if cursor_selection == 0:
                     self._display_item()
 
-                
                 if cursor_selection == 1:
                     self.save_data()
                 
@@ -457,7 +456,6 @@ class MainGame(object):
                 if cursor_selection == 2:
                     self._display_player_status()
 
-                
                 if cursor_selection == 3:
                     clear()
                     self._draw_hidden_map()
@@ -497,7 +495,8 @@ class MainGame(object):
                         tmp[i] = section_selected + tmp[i]
                     else:
                         tmp[i] = section_non_selected + tmp[i]
-
+            
+            print("Status Menu")
             print("="*30)
             print("\n".join(tmp))
             print("="*30)
@@ -740,12 +739,15 @@ class MainGame(object):
 
                 # Yes case --> Initialise map.
                 if cursor_selection == 0:
-                    self.player.items.append(random_item_selection())
+                    obtained_item = random_item_selection()
+                    self.player.items.append(obtained_item)
 
                     # Remove the treasure from map.
                     self.original_map_grid[next_player_pos[0]][next_player_pos[1]] = " "
                     self.map_grid = deepcopy(self.original_map_grid)
                     self.map_grid[next_player_pos[0]][next_player_pos[1]] = self.player.displayed_character
+                    print("Player obtained {}".format(obtained_item))
+                    getch()
                     break
 
                 # No case --> Do nothing.
