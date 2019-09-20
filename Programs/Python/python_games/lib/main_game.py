@@ -14,21 +14,24 @@ from clear_screen import clear
 from maze_generation import generate_maze_grid, make_maze_grid
 from random import random
 from maze_object import MazeObject
-
 from default_values import *
+from item import *
 
 # The value which determine the difficulty of level increase.
 constant_next_level_exp = 1.4
-
 default_amount_to_reveal = 3
 # Load creatures.
 creature_file_path = os.path.join(data_dir,creature_data_file_name)
 enemy_json = json.loads(open(creature_file_path, "r").read())
 
+# Reads item data for creating the objects.
+# Note: the object will not be create unless it is 
+# the temporary effective items.
+item_data_file_path = os.path.join(data_dir, item_data_file_name)
+item_json = json.loads(open(item_data_file_path, "r").read())
 
 # Set the colors of characters in the terminal.
 os.system("color 0") 
-
 getch = _Getch()
 
 # Initialize and set directions
@@ -53,11 +56,21 @@ string_numerical_player_strength = ["player_name", "is_living", "is_player",
                                     "max_item_hold", "exp", "current_exp", "bonus_point", "next_exp", "items",
                                     "skills", "rank", "drop_item"]
 
+# These parameters will not be selected in the selection menu.
+non_selected_parameters = ["current_exp","next_exp","level","current_hp", 
+                                   "current_mp", "current_sp", "current_ep"]
+        
+
 # TODO: Create methods for saving and loading game.
 
 
 # The map for players to walk at the beginning
 # TODO: Change Map name to a proper name
+
+# TODO: Differentiate the apprearance of the items based on the level.
+def random_item_selection(level = 1):
+    return choice(list(item_json.keys()))
+
 class MainGame(object):
 
     # When initialised, Map object puts players and item boxes at the
@@ -99,21 +112,63 @@ class MainGame(object):
         
         self._manipulate_map()
 
-    
+    def _exit_game(self):
+        clear()
+        
+        selection_list = ["Yes", "No"]
+        cursor_not_selected = " "
+        cursor_selected = ">"
+        tmp_cursor = deepcopy(selection_list)
+        cursor_selection = 1
+        
+        while True:
+
+            self._draw_hidden_map()
+            for i in range(len(tmp_cursor)):
+                if i == cursor_selection:
+                    tmp_cursor[i] = cursor_selected + tmp_cursor[i]
+                else:
+                    tmp_cursor[i] = cursor_not_selected + tmp_cursor[i]
+
+            print("Will you exit the game?")
+            print("".join(tmp_cursor))
+            tmp_cursor = deepcopy(selection_list)
+            tmp = getch()
+            if tmp == "LEFT_KEY":
+                if cursor_selection > 0:
+                        cursor_selection -= 1
+                
+            elif tmp == "RIGHT_KEY":
+                if cursor_selection < len(tmp_cursor) - 1:
+                        cursor_selection += 1
+
+            elif tmp == b"\r":
+                # Yes case --> Initialise map.
+                if cursor_selection == 0:
+                    return True
+                
+                # No case --> Do nothing.
+                if cursor_selection == 1:
+                    return False
+            clear()
+        clear()
+
     def _manipulate_map(self):
         while True:
             character = getch()
             
             # This condition will be removed later.
             if character == b"n":
-                break
+                if self._exit_game():
+                    break
             else:
                 if character in ["UP_KEY", "DOWN_KEY", "LEFT_KEY", "RIGHT_KEY"]:
-                    self._move_player(character)
+                    if self._move_player(character):
+                        break
 
                 elif character == b"\x1b":
                     self.player_menu()
-
+            
 
     # Turn-based fight is now imminent
     # TODO: Enable the random appearance of the enemy based on the depth of the level.
@@ -136,7 +191,7 @@ class MainGame(object):
         random_enemy = choice(list(enemy_list))
         enemy = MazeObject(json_data = enemy_json[random_enemy], level = self.level, is_random= "yes")
 
-
+        # TODO: Take player's luckiness into account.
         def _player_turn_normal_attack():
             # Player turn
             player_base_attack_value = self.player.strength
@@ -147,7 +202,14 @@ class MainGame(object):
                 print("You defeated the creature!")
                 print("Player acquire {} exp".format(enemy.exp))
                 print("Press any key to return to map...")
-                self.player.get_experience(enemy.exp)
+                self.player._get_experience(enemy.exp)
+                
+                # If it is bigger, then the enemy will drop the 
+                if uniform(0,1.0) > 0.8 - (0.8 / (100 / (self.player.luckiness ** 0.70))):
+                    print("Enemy dropped item!")
+                    print("The content of the item is {}".format(enemy.drop_item))
+                    self.player.items.append(enemy.drop_item)
+                
                 getch()
                 clear()
                 return True
@@ -208,11 +270,11 @@ class MainGame(object):
                         if _player_turn_normal_attack():
                             break
                         if _enemy_turn_normal_attack():
-                            break
+                            return True
 
                     else:
                         if _enemy_turn_normal_attack():
-                            break
+                            return True
                         if _player_turn_normal_attack():
                             break
                     
@@ -249,7 +311,7 @@ class MainGame(object):
 
         # Create the object instead of calling function...
         if 0 < k and k < tmp:
-            self._enemy_fight()
+            return self._enemy_fight()
 
     def _initialize_map(self):
         self.map_grid = generate_maze_grid(make_maze_grid(self.width,self.height))
@@ -291,6 +353,11 @@ class MainGame(object):
 
         # Update player position.
         self.player.object_pos = next_player_pos
+        
+        self.player.current_ep = max(self.player.current_ep - 1, 0)
+
+        if self.player.current_ep:
+            self.player.current_hp = max(self.player.current_hp - 1, 1)
 
     # Allows the users to select whether they will proceed to the next floor...
     def _map_proceed_selection(self):
@@ -376,11 +443,12 @@ class MainGame(object):
                     cursor_selection += 1
 
             elif tmp == b"\r":
-                # Yes case --> Initialise map.
+                
+                
                 if cursor_selection == 0:
-                    pass
+                    self._display_item()
 
-                # Next TODO: To create player data save.
+                
                 if cursor_selection == 1:
                     self.save_data()
                 
@@ -406,10 +474,8 @@ class MainGame(object):
     
     def _display_player_status(self):
 
-        numerical_player_strengh = ["hp", "mp", "sp", "ep"]
-        non_numerical_player_strength = ["strength", "agility", "vitality", "dexterity",
-                                        "smartness", "magic_power", "mental_strength", "luckiness"]
-        exit_to_player_menu = ["Exit"] 
+        exit_to_player_menu = ["Exit"]
+
         section_selected = ">"
         section_non_selected = " "
         selection_idx = 0
@@ -419,8 +485,9 @@ class MainGame(object):
         while True:
             
             tmp = deepcopy(selection_str_list)
-            for i in range(len(tmp)):
-                if i < len(tmp) -1:
+            menu_length = len(tmp)
+            for i in range(menu_length):
+                if i < menu_length -1:
                     if selection_idx  == i:
                         tmp[i] = section_selected + tmp[i] + ": "+ str(eval("self.player.{}".format(tmp[i])))
                     else:
@@ -435,6 +502,18 @@ class MainGame(object):
             print("\n".join(tmp))
             print("="*30)
             print("Bonus point: {}".format(self.player.bonus_point))
+            
+            tmp = []
+            for i in non_selected_parameters[:3]:
+                tmp.append("{0}: {1}".format(i, eval("self.player.{0}".format(i))))
+        
+            print(" ".join(tmp))
+            
+            tmp = []
+            for i in non_selected_parameters[3:]:
+                tmp.append("{0}: {1}".format(i, eval("self.player.{0}".format(i))))
+                
+            print(" ".join(tmp))
             ch = getch()
 
             if ch == b'\r':
@@ -442,11 +521,11 @@ class MainGame(object):
                 if selection_idx < 3 and self.player.bonus_point > 0:
                     exec("self.player.{} += 5".format(selection_str_list[selection_idx]))
                     self.player.bonus_point -= 1
-                elif selection_idx >= 3 and selection_idx < len(tmp) - 1 and self.player.bonus_point > 0:
+                elif selection_idx >= 3 and selection_idx < menu_length - 1 and self.player.bonus_point > 0:
                     exec("self.player.{} += 1".format(selection_str_list[selection_idx]))
                     self.player.bonus_point -= 1
 
-                elif selection_idx == len(tmp) - 1:
+                elif selection_idx == menu_length - 1:
                     break
             
             elif ch == "UP_KEY":
@@ -454,7 +533,7 @@ class MainGame(object):
                     selection_idx -= 1
                 
             elif ch == "DOWN_KEY":
-                if selection_idx < len(tmp) - 1:
+                if selection_idx < menu_length - 1:
                     selection_idx += 1
             
             elif ch == b'\x1b':
@@ -463,6 +542,70 @@ class MainGame(object):
             clear()
         clear()
 
+
+    def _display_item(self):
+        
+        section_selected = ">"
+        section_non_selected = " "
+        selection_idx = 0
+        clear()
+
+        while True:
+            selection_str_list = self.player.items + ["Exit"]
+            tmp = deepcopy(selection_str_list)
+            menu_length = len(tmp)
+            for i in range(menu_length):
+                if selection_idx  == i:
+                    tmp[i] = section_selected + tmp[i] 
+                else:
+                    tmp[i] = section_non_selected + tmp[i] 
+
+            print("="*30)
+            print("\n".join(tmp))
+            print("="*30)
+            print("Bonus point: {}".format(self.player.bonus_point))
+            
+            tmp = []
+            for i in non_selected_parameters[:3]:
+                tmp.append("{0}: {1}".format(i, eval("self.player.{0}".format(i))))
+        
+            print(" ".join(tmp))
+            
+            tmp = []
+            for i in non_selected_parameters[3:]:
+                tmp.append("{0}: {1}".format(i, eval("self.player.{0}".format(i))))
+                
+            print(" ".join(tmp))
+            ch = getch()
+
+            if ch == b'\r':
+                
+                if selection_idx < menu_length - 1:
+                    # TODO: The temporary effect needs to be considered.
+                    item_name = selection_str_list[selection_idx]
+                    item_effect = item_json[selection_str_list[selection_idx]]
+                    item = Item(item_name, item_effect)
+                    
+                    if item.use_item(self.player):
+                        del self.player.items[selection_idx]
+
+                # Exit Item menu.
+                elif selection_idx == menu_length - 1:
+                    break
+            
+            elif ch == "UP_KEY":
+                if selection_idx > 0:
+                    selection_idx -= 1
+                
+            elif ch == "DOWN_KEY":
+                if selection_idx < menu_length - 1:
+                    selection_idx += 1
+            
+            elif ch == b'\x1b':
+                break
+
+            clear()
+        clear()
 
     # Save player's data and attributes.
     def save_data(self):
@@ -522,7 +665,9 @@ class MainGame(object):
             clear()
 
             # Enemy appears before reaches a goal.
-            self._enemy_encounter(self.player.luckiness)
+            if self._enemy_encounter(self.player.luckiness):
+                return True
+
             self._move_player_sub(str_direction, next_player_pos)
 
             # TODO: Allow player to select yes or no to proceed to the next level.
@@ -531,20 +676,84 @@ class MainGame(object):
             clear()
             self._draw_hidden_map()
 
+        elif self.original_map_grid[next_player_pos[0]][next_player_pos[1]] == self.treasure_symbol:
+            clear()
+
+            if self._enemy_encounter(self.player.luckiness):
+                return True
+
+            self._move_player_sub(str_direction, next_player_pos)
+
+            self._treasure_selection(next_player_pos)
+            
+            clear()
+            self._draw_hidden_map()
+
+
         elif self.original_map_grid[next_player_pos[0]][next_player_pos[1]] != "#":
             clear()
 
             self._move_player_sub(str_direction, next_player_pos)
             
             # Draw the enemy encouter screen.
-            self._enemy_encounter(self.player.luckiness)
+            if self._enemy_encounter(self.player.luckiness):
+                return True
 
             self._draw_hidden_map()
             
         else:
             clear()
             self._draw_hidden_map()
+    
+    def _treasure_selection(self, next_player_pos):
+         # Allows the users to select whether they will proceed to the next floor...
+        
+        selection_list = ["Yes", "No"]
+        cursor_not_selected = " "
+        cursor_selected = ">"
+        tmp_cursor = deepcopy(selection_list)
+        cursor_selection = 1
+        
+        while True:
 
+            self._draw_hidden_map()
+            for i in range(len(tmp_cursor)):
+                if i == cursor_selection:
+                    tmp_cursor[i] = cursor_selected + tmp_cursor[i]
+                else:
+                    tmp_cursor[i] = cursor_not_selected + tmp_cursor[i]
+
+            print("Will you pick up the item?")
+            print("".join(tmp_cursor))
+
+            tmp_cursor = deepcopy(selection_list)
+            tmp = getch()
+            if tmp == "LEFT_KEY":
+                if cursor_selection > 0:
+                        cursor_selection -= 1
+                
+            elif tmp == "RIGHT_KEY":
+                if cursor_selection < len(tmp_cursor) - 1:
+                        cursor_selection += 1
+
+            elif tmp == b"\r":
+
+                # Yes case --> Initialise map.
+                if cursor_selection == 0:
+                    self.player.items.append(random_item_selection())
+
+                    # Remove the treasure from map.
+                    self.original_map_grid[next_player_pos[0]][next_player_pos[1]] = " "
+                    self.map_grid = deepcopy(self.original_map_grid)
+                    self.map_grid[next_player_pos[0]][next_player_pos[1]] = self.player.displayed_character
+                    break
+
+                # No case --> Do nothing.
+                if cursor_selection == 1:
+                    break
+            clear()
+        clear()
+    
     # Randomly place player
     def _randomly_place_player(self,player):
         space_list_to_place_player = []
@@ -588,5 +797,3 @@ class MainGame(object):
         # Print map
         print(tmp_str)
         self._display_status()
-
-

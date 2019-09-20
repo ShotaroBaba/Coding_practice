@@ -9,7 +9,7 @@ non_numerical_player_strength = ["strength", "agility", "vitality", "dexterity",
 def return_json_value_data(key_value, default_value, json_data, level  = 1, is_random = "no"):
     if json_data != {}:
         if is_random == "yes":
-            return round(json_data[key_value] * uniform(level-0.2, level + 0.2), 0)
+            return int(round(json_data[key_value] * uniform(level-0.2, level + 0.2), 0))
         else:
             return json_data[key_value]
     else:
@@ -195,7 +195,7 @@ class MazeObject(object):
         self.weight_limit = 10 + int(self.strength // (1.5 + self.strength // 20))
     
     # The system of the calculation of the level
-    def get_experience(self, exp_values):
+    def _get_experience(self, exp_values):
 
         self.current_exp += exp_values
         self.next_exp -= exp_values

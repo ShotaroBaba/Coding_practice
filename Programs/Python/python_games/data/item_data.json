@@ -3,7 +3,7 @@
         "hp_change": 30,
         "mp_change": 0,
         "sp_change": 0,
-        "ep_change": 0,
+        "ep_change": 50,
         "strength_change": 0,
         "agility_change": 0,
         "vitality_change": 0,

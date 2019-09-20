@@ -36,7 +36,11 @@ class _GetchWindows:
         import msvcrt
         basic_key = msvcrt.getch()
         if basic_key == b"\xe0":
-            return {b"H": "UP_KEY", b"M": "RIGHT_KEY", b"P": "DOWN_KEY", b"K": "LEFT_KEY"}[msvcrt.getch()]
+            try:
+                return {b"H": "UP_KEY", b"M": "RIGHT_KEY", b"P": "DOWN_KEY", b"K": "LEFT_KEY"}[msvcrt.getch()]
+            # pass if the input value is wrong.
+            except:
+                pass
         else:
             return basic_key
 

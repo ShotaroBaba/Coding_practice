@@ -52,12 +52,10 @@ class GameMenu():
             if character == b"\r" and cursor_value == 0:
                 # Create 10x10 maps after creating maps.
                 self.random_map = MainGame()
-                break
-            
+                
             # TODO: Allows to load the data.
             elif character == b"\r" and cursor_value == 1:
                 self.random_map = MainGame(load_data = True)
-                break
             
             # Exit game.
             elif character == b"\r" and cursor_value == 2:
@@ -80,7 +78,7 @@ class GameMenu():
                     tmp[i] = self.selection_not_made + tmp[i]
             
             clear()
-    
+        clear()
 
 class Menu(object):
     def __init__(self):
